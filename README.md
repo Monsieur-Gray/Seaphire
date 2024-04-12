@@ -1,4 +1,4 @@
-# Hydrox -> A nice programming language!
+# CAXY -> A nice programming language!
 
 It is an interpretted language made in rust.
 - Also supports compiler (C++ or ASMx86-64)
