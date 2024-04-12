@@ -1,1 +1,2 @@
-# CAXY---lang
+# CAXY -> A sexy programming language!
+
