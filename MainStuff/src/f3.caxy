@@ -1,0 +1,7 @@
+_VARS: 1
+    str greet 'Hello there'
+EOS!
+
+_MAIN:
+    PRNT greet
+_END:

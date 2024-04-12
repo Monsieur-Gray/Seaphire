@@ -1,0 +1,13 @@
+_VARS: 5
+    str naam 'Hello there'
+    str ?kaam 'Engineer'
+
+    int ?wage 147
+
+    bool boy true
+    float decim 10.123
+EOS!
+
+_MAIN:
+    PRNT wage
+_END:
