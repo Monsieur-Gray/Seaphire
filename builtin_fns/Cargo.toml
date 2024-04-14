@@ -3,8 +3,6 @@ name = "builtin_fns"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-my_modules =  {path = "/home/kali/Desktop/Programming/ProLang_rusty/my_modules"}
+my_modules =  {path = "./my_modules"}
 colored = "2.1.0"
