@@ -36,26 +36,6 @@ pub fn fetch_Univ(data: &Builtins) -> Result<f32, String> {
 }
 /*================================================================================ */
 /*================================================================================ */
-/* pub fn fetch_MyRes(data: &Builtins) -> MyRes<i32, f32, String, bool> {
-    match data {
-        Builtins::D_type(D_type::int(s_int)) => MyRes::Int(*s_int),
-        Builtins::D_type(D_type::float(s_flt)) => MyRes::Flt(*s_flt),
-
-        Builtins::D_type(D_type::str( d )) => MyRes::Str(chk_qmark(d)),
-        Builtins::ID(d) => MyRes::Str(chk_qmark(d)),
-
-        Builtins::D_type(D_type::bool(b)) => MyRes::Bool(*b),
-        _ => crate::Throw!("I cant do shit")
-    }
-} */
-
-/* #[derive(Debug)]
-pub enum MyRes<I, F, S, B>{
-    Int(I),
-    Flt(F), 
-    Str(S),
-    Bool(B)
-} */
 
 fn chk_qmark(s: &String) -> String {
     if s.starts_with('?') {
@@ -63,32 +43,3 @@ fn chk_qmark(s: &String) -> String {
     }
     else { s.to_string() }
 }
-
-// impl<I, F, S, B> MyRes<I, F, S, B> {
-//     pub fn flt_unwrap(self) -> F 
-//         where S: std::fmt::Debug, B: std::fmt::Debug, F: std::fmt::Debug, I: std::fmt::Debug
-//     {
-//         match self {
-//         MyRes::Flt(F) => F,
-//         other => panic!("float unwrap not implemented for {:?}", other)
-//         }
-//     }
-// //-----------------------------------------------------------------------------------------------------------------------
-//     pub fn str_unwrap(self) -> S 
-//         where S: std::fmt::Debug, B: std::fmt::Debug, F: std::fmt::Debug, I: std::fmt::Debug
-//     {
-//         match self {
-//             MyRes::Str(S) => S,
-//             other => panic!("str unwrap not implemented for {:?}", other)
-//         }
-//     }
-// //-----------------------------------------------------------------------------------------------------------------------
-//     pub fn bool_unwrap(self) -> B 
-//         where S: std::fmt::Debug, B: std::fmt::Debug, F: std::fmt::Debug, I: std::fmt::Debug
-//     {
-//         match self {
-//             MyRes::Bool(B) => B,
-//             other => panic!("bool unwrap not implemented for {:?}", other)
-//         }
-//     }
-// }

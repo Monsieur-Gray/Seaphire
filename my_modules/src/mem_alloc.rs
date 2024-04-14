@@ -1,17 +1,16 @@
-
 use std::collections::HashMap;
 use crate::defkeys::*;
 use crate::fetch_data::*;
 use crate::Throw;
 
 // [MemType(int), ID("Age"), D_type(int(69))] ------------------------- new
-pub fn calloc(vsec: &Vec<Vec<Builtins>>) -> (HashMap<String, &Builtins>, HashMap<String, &Builtins>) {
-    let mut stack_hash: HashMap<String, &Builtins> = HashMap::new();
-    let mut heap_hash: HashMap<String, &Builtins> = HashMap::new();
+pub fn calloc(vsec: Vec<Vec<Builtins>>) -> (HashMap<String, Builtins>, HashMap<String, Builtins>) {
+    let mut stack_hash: HashMap<String, Builtins> = HashMap::new();
+    let mut heap_hash: HashMap<String, Builtins> = HashMap::new();
 
     for line in vsec {
         let key = fetch_str(&line.get(1).unwrap() ).unwrap();
-        let val = &line.last().unwrap();
+        let val = line.last().unwrap().clone();
 
         if key.starts_with('?') {
             heap_hash.insert(key[1..].to_string(), val);
@@ -25,8 +24,8 @@ pub fn calloc(vsec: &Vec<Vec<Builtins>>) -> (HashMap<String, &Builtins>, HashMap
 
 //--------------------------------------------------------------------------------------------------------------------------------------
 pub fn free_mem<'b>(var_nam: &String,
-    stack_hash: &mut HashMap<String, &Builtins>,
-    heap_hash: &mut HashMap<String, &Builtins>
+    stack_hash: &mut HashMap<String, Builtins>,
+    heap_hash: &mut HashMap<String, Builtins>
 ) {
     if let Some(_) = stack_hash.get(var_nam) {
         stack_hash.remove(var_nam);
@@ -42,17 +41,20 @@ pub fn free_mem<'b>(var_nam: &String,
 //--------------------------------------------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------------------------------------------
 // D_type(str("Engineer"))
-pub fn mutate_mem <'b> (line: &'b Vec<Builtins>,     // [Builtins::ID(oldval), D_type::newval]
-    stack_hash: &HashMap<String, &'b Builtins>,
-    mut heap_clone: HashMap<String, &'b Builtins>
-) -> HashMap<String, &'b Builtins>
+pub fn mutate_mem <'b> ( line: &'b Vec<Builtins>,     
+        stack_hash: &HashMap<String, Builtins>,
+        mut heap_clone: HashMap<String, Builtins>)     -> HashMap<String, Builtins>
 {
     let keyname = fetch_str(&line[1]).unwrap().clone();
-    let ol_val =  if let Some(nam) = heap_clone.get(&keyname) { nam } 
-        else {
+
+    let ol_val =  if let Some(nam) = heap_clone.get(&keyname) { 
+        nam 
+    } 
+    else {
         Throw!( format!( "No MUTABLE variable named '{}' found\nMake sure its mutable", keyname) )
     };
-    let new_val = match &line[2] {
+
+    let new_val =  match &line[2] {
         Builtins::D_type(_) => &line[2],
         Builtins::ID(id) => {
             if let Some(v1) = stack_hash.get(id) {
@@ -66,14 +68,28 @@ pub fn mutate_mem <'b> (line: &'b Vec<Builtins>,     // [Builtins::ID(oldval), D
             }
         },
         _ => panic!("You werent suppose tto put htat")
-    };
+        }.clone() ;
 
-    if check_compatible(&ol_val, new_val) {
-        heap_clone.entry(keyname).and_modify(|e| *e = new_val );
+        if check_compatible(ol_val, &new_val) {
+            heap_clone.entry(keyname).and_modify(|e| *e = new_val );
+        };
+
+        heap_clone
     }
+
+//--------------------------------------------------------------------------------------------------------------------------------------
+
+pub fn insert_to_mem <'b> ( line: &'b Vec<Builtins>,     
+        heap_clone: HashMap<String, Builtins>,
+        direct_value: Builtins )     -> HashMap<String, Builtins>
+{
+    let mut heap_clone = heap_clone.clone();
+
+    let keyname = fetch_str(&line[1]).unwrap().clone();
+    heap_clone.entry(keyname).and_modify(move |e| *e = direct_value );
     heap_clone
 }
-//--------------------------------------------------------------------------------------------------------------------------------------
+
 //--------------------------------------------------------------------------
 
 fn check_compatible(v1: &Builtins, v2: &Builtins) -> bool {
@@ -85,4 +101,3 @@ fn check_compatible(v1: &Builtins, v2: &Builtins) -> bool {
         _ => crate::Throw!("The old value and new value dont have the same type bro")
     }
 }
-

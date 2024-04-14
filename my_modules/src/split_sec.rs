@@ -2,12 +2,12 @@ use crate::defkeys::*;
 use crate::fetch_data::fetch_num;
 
 //---------------MAIN_SEC & VAR_SEC
-pub fn split_code(code: &Vec<Vec<Builtins>>) -> (Vec<Vec<Builtins>>, Vec<Vec<Builtins>>) {
+pub fn split_code(code: Vec<Vec<Builtins>>) -> (Vec<Vec<Builtins>>, Vec<Vec<Builtins>>) {
     let mut line_num: usize = 0;
     let mut VAR_SEC: Vec<Vec<Builtins>> = Vec::new();
     let mut MAIN_SEC: Vec<Vec<Builtins>> = Vec::new();
 
-    for line in code {
+    for line in &code {
          match &line.first().unwrap() {
         //---------- Main-section-------------------------------------------------
             Builtins::Section(Section::MAIN) => 

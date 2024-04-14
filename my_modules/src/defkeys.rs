@@ -1,5 +1,3 @@
-// #![allow(non_camel_case_types)]
-
 use std::collections::HashMap;
 
 #[derive(Debug, PartialEq, Clone)] 
@@ -19,7 +17,6 @@ pub enum Operation { ADD, SUB, MUL, DIV}       // Arithmetic operations
 #[derive(Debug, PartialEq, Clone)]
 pub enum Section {VARS, END, MAIN, EOS}        // Sections keywords
 
-
 #[derive(Debug, PartialEq, Clone)]          
 pub enum MemType {int, float, str, bool}    // Memory Types
 
@@ -36,71 +33,43 @@ pub enum MemInst {MOV, DEL, INSERT}       // Memory Instruction CALLED IN MAINSE
 #[derive(Debug, PartialEq, Clone)]
 pub enum Builtins {
     D_type(D_type),
-    Std_fns(Std_fns),
     Operation(Operation),
+    Std_fns(Std_fns),
     Section(Section),
     MemType(MemType),
     MemInst(MemInst),
     ID(String),
-//     Expr(String),
     ControlFlow(ControlFlow),
     Comment
 }
 
 impl Builtins {
-    pub fn get_builtins() -> Vec<&'static str> {
-        vec![
-    // OPERATIONS
-            "ADD", "SUB", "MUL", "DIV",
-
-    // BUILTIN STANDARD-FUNCTIONS
-            "PRNT", 
-        //     "INCR", "DECR",
-
-    // SECTION IDENTIFIERS
-            "_VARS:", "_END:", "_MAIN:", "EOS!",
-    
-    // MEMORY TYPES
-            "int", "float", "str", "bool",
-
-    //MEMORY INSTRUCTIONS
-            "MOV", "DEL", "INSERT",
-
-    // COMMENT!!
-            "crap->",
-
-    // CONTROL FLOW
-            "JUMP"
-
-        ]
-    }
-
     pub fn builtin_hash() -> HashMap<String, Builtins> {
         HashMap::from([
-                ( "ADD".to_string(), Builtins::Operation(Operation::ADD) ), 
+                ( "ADD".to_string(), Builtins::Operation(Operation::ADD) ),     //Operation
                 ( "SUB".to_string(), Builtins::Operation(Operation::SUB) ), 
                 ( "MUL".to_string(), Builtins::Operation(Operation::MUL) ), 
-                ( "DIV".to_string(), Builtins::Operation(Operation::DIV) ),
+                ( "DIV".to_string(), Builtins::Operation(Operation::DIV) ), 
 
-                ( "PRNT".to_string(), Builtins::Std_fns(Std_fns::PRNT) ),
+                ( "PRNT".to_string(), Builtins::Std_fns(Std_fns::PRNT) ),       // Std fns
 
-                ( "_VARS:".to_string(), Builtins::Section(Section::VARS) ),
+                ( "_VARS:".to_string(), Builtins::Section(Section::VARS) ),     // Section
                 ( "_END:".to_string(), Builtins::Section(Section::END) ),
                 ( "_MAIN:".to_string(), Builtins::Section(Section::MAIN) ),
                 ( "EOS!".to_string(), Builtins::Section(Section::EOS) ),
 
-                ("int".to_string(), Builtins::MemType(MemType::int)),
+                ("int".to_string(), Builtins::MemType(MemType::int)),           // MemType
                 ("float".to_string(), Builtins::MemType(MemType::float)),
                 ("str".to_string(), Builtins::MemType(MemType::str)),
                 ("bool".to_string(), Builtins::MemType(MemType::bool)),
 
-                ("MOV".to_string(), Builtins::MemInst(MemInst::MOV)),
+                ("MOV".to_string(), Builtins::MemInst(MemInst::MOV)),           // MemInst
                 ("DEL".to_string(), Builtins::MemInst(MemInst::DEL)),
                 ("INSERT".to_string(), Builtins::MemInst(MemInst::INSERT)),
 
-                ("JUMP".to_string(), Builtins::ControlFlow(ControlFlow::JUMP)),
+                ("JUMP".to_string(), Builtins::ControlFlow(ControlFlow::JUMP)),     // ControlFlow
 
-                ("crap->".to_string(), Builtins::Comment)
+                ("crap->".to_string(), Builtins::Comment)       // Comment
 
         ])
     }
