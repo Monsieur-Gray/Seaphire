@@ -1,7 +1,10 @@
-_VARS: 1
+_VARS: 2
     str greet 'Hello there'
+    int ?mutab 10
 EOS!
 
 _MAIN:
-    PRNT greet
+    PRNT mutab
+    MOV mutab ADD 2 5
+    PRNT mutab
 _END:

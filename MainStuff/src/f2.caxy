@@ -10,4 +10,8 @@ EOS!
 
 _MAIN:
     PRNT wage
+    MOV wage 12
+    PRNT wage
+    MOV wage PRNT 'dff'
+    PRNT wage
 _END:
