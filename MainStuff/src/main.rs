@@ -13,7 +13,7 @@ fn main() {
 
     let CODE: Vec<Vec<Builtins>> = get_type::get_type(text);
 
-    let (_msec, _vsec) = split_sec::split_code(&CODE);
+    let (_msec, _vsec) = split_sec::split_code(CODE);
     
     let (mut STACK, mut HEAP) = mem_alloc::calloc(_vsec);
         
