@@ -1,11 +1,7 @@
-_VARS: 5
-    str naam 'Hello there'
-    str ?kaam 'Engineer'
-
+_VARS: 3
+    str name 'Hello there'
+    str ?job 'Hacker'
     int ?wage 147
-
-    bool boy true
-    float decim 10.123
 EOS!
 
 _MAIN:
