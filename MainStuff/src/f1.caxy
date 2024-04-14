@@ -2,7 +2,7 @@ _VARS: 5
     int Age 69
     int Decim 12.1
     str Gen 'bruh'
-    str ?Name 'Developer'
+    str ?Name 'Gray'
     bool Alive true
 EOS!
 
