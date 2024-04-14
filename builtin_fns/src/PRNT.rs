@@ -3,8 +3,8 @@ use colored::Colorize;
 use my_modules::{defkeys::*, fetch_data::{fetch_bool, fetch_num, fetch_str}};
 
 pub fn print_line(line: &Vec<Builtins>,
-    stack_hash: &HashMap<String, &Builtins>,
-    heap_hash: HashMap<String, &Builtins>
+    stack_hash: &HashMap<String, Builtins>,
+    heap_hash: HashMap<String, Builtins>
 ) -> String {
     if line.len() > 1 {
         match &line[1] {
@@ -40,7 +40,7 @@ pub fn print_line(line: &Vec<Builtins>,
 }
 
 fn print_var(var_nam: String,
-    mem_hash: &HashMap<String, &Builtins>
+    mem_hash: &HashMap<String, Builtins>
 ) {
     let dat = match mem_hash.get(&var_nam) {
         Some(stuff) => stuff,

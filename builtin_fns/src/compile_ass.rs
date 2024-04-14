@@ -1,4 +1,3 @@
-// #![allow(unused)]
 use std::collections::HashMap;
 
 use my_modules::defkeys::*;
@@ -10,8 +9,8 @@ use crate::Throw;
 use crate::ARITHMETIC::perf_math;
 
 fn gen_vars(
-    stack_hash: &HashMap<String, &Builtins>,
-    heap_hash: &HashMap<String, &Builtins>
+    stack_hash: &HashMap<String, Builtins>,
+    heap_hash: &HashMap<String, Builtins>
 ) -> (String, String) {
 
     let mut stack_buff = String::new();
@@ -50,18 +49,15 @@ fn gen_vars(
 
 pub fn compile_to_asm(
     block: &Vec<Vec<Builtins>>,
-    stack_hash: HashMap<String, &Builtins>,
-    heap_hash:HashMap<String, &Builtins>
+    stack_hash: HashMap<String, Builtins>,
+    heap_hash:HashMap<String, Builtins>
 ) {
     let mut main_buff = String::new();
     let (sbuff, mut hbuff) = gen_vars(&stack_hash, &heap_hash);
+    let newline_var = String::from("\tnewline db 10\r");
 
-    let mut newline_var = String::new();
-    newline_var.push_str("\tnewline db 10\r");
-
-    let mut line_num = 0;
-    loop {
-        let inp_line = block.get(line_num as usize).unwrap();
+    for inp_line in block{
+        // let inp_line = block.get(line_num as usize).unwrap();
         match &inp_line[0] {
             Builtins::Operation(_) => {
                 let math_out = perf_math(&inp_line, &stack_hash, &heap_hash);
@@ -87,24 +83,11 @@ pub fn compile_to_asm(
             };
         },
 
-    //CONTROL FLOW-------------------------
-        /* Builtins::ControlFlow(inst) => match inst {
-            ControlFlow::JUMP => {  // JUMPING JAPAACK!
-                if let Ok(num) = fetch_num( inp_line.get(1).unwrap() ) {
-                    if num < 0.0 { line_num += num as i32 - 1 }
-                    else { line_num += num as i32}
-                }
-            }
-        }, */
-
 
         //ERROR HANDLING--------------------------------
             Builtins::Comment => (),
-            // other => Throw!(format!("UNIMPLEMENTED FUNCTIONALITY -->{:?}", other))
-            _ => line_num += 1
+            other => Throw!(format!("UNIMPLEMENTED FUNCTIONALITY -->{:?}", other))
         };
-        line_num += 1;
-        if line_num >= block.len() as i32{ break }
     };
 
     use std::fs;

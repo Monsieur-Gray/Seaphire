@@ -63,32 +63,3 @@ fn chk_qmark(s: &String) -> String {
     }
     else { s.to_string() }
 }
-
-// impl<I, F, S, B> MyRes<I, F, S, B> {
-//     pub fn flt_unwrap(self) -> F 
-//         where S: std::fmt::Debug, B: std::fmt::Debug, F: std::fmt::Debug, I: std::fmt::Debug
-//     {
-//         match self {
-//         MyRes::Flt(F) => F,
-//         other => panic!("float unwrap not implemented for {:?}", other)
-//         }
-//     }
-// //-----------------------------------------------------------------------------------------------------------------------
-//     pub fn str_unwrap(self) -> S 
-//         where S: std::fmt::Debug, B: std::fmt::Debug, F: std::fmt::Debug, I: std::fmt::Debug
-//     {
-//         match self {
-//             MyRes::Str(S) => S,
-//             other => panic!("str unwrap not implemented for {:?}", other)
-//         }
-//     }
-// //-----------------------------------------------------------------------------------------------------------------------
-//     pub fn bool_unwrap(self) -> B 
-//         where S: std::fmt::Debug, B: std::fmt::Debug, F: std::fmt::Debug, I: std::fmt::Debug
-//     {
-//         match self {
-//             MyRes::Bool(B) => B,
-//             other => panic!("bool unwrap not implemented for {:?}", other)
-//         }
-//     }
-// }

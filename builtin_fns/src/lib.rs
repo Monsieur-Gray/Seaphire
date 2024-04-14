@@ -1,5 +1,4 @@
 #![allow(non_snake_case)]
-#![allow(unreachable_code)]     // For ARITHMETIC
 
 extern crate colored;
 
@@ -7,8 +6,8 @@ pub mod ARITHMETIC;
 pub mod fetch_data;
 pub mod EXECUTE;
 pub mod PRNT;
-pub mod COMPILE;
-pub mod compile_ass;
+// pub mod COMPILE;
+// pub mod compile_ass;
 
 
 #[macro_export]
