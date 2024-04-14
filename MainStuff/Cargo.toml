@@ -3,8 +3,6 @@ name = "main_project"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 my_modules =  {path = "./my_modules"}
 builtin_fns =  {path = "./builtin_fns"}
