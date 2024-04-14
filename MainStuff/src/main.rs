@@ -1,5 +1,4 @@
 #![allow(non_snake_case)]
-#![allow(unused)]
 
 use my_modules::*;
 use my_modules::defkeys::Builtins;
@@ -15,7 +14,7 @@ fn main() {
 
     let (_msec, _vsec) = split_sec::split_code(CODE);
     
-    let (mut STACK, mut HEAP) = mem_alloc::calloc(_vsec);
+    let (STACK, HEAP) = mem_alloc::calloc(_vsec);
         
 // //--=-=-=-=-==-=-=-==============------------------------------------=-=-=-=-=-==-=-------------------------------
     println!("<================-================>");
