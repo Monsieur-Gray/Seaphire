@@ -19,7 +19,7 @@
 <h3> Declaration </h3>
 
 - The following is the structure for declaring variables :--> ` <MemType> <Name> <Value>`
-    - MemType ==> `int`  , `float` , `str` or `bool`
+    - MemType --> `int`  , `float` , `str` or `bool`
 
 - To declare Strings , use ' ' (single-inverted commas)
 - **Variables are immutable by default!**
