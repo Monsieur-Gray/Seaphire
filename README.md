@@ -43,3 +43,8 @@
 <h2> EXPRESSIONS </h2>
 
 - `Math_expression`:- syntax -> `OPERATION NUM1 NUM2 .....` (*each arithmetic statement is a math_expression*)
+- `Conditional_expression`:-
+- -  A conditional_expression can be used in **Loops** or can be PRINTED :)
+  -  To declare a conditional expression , enclose it in `[..]`
+  -  EG :- `PRNT [2 > 4]` -> `false` 
+  -  
