@@ -13,5 +13,5 @@ Bruh , I made it in Python originally , but I later switched to Rust while learn
 - - All variables must be declared here.
   - The number of variables declared should be stated.
   - All variables must have a value while declaration.
-  -  
+  - The section must end with `EOS!`
 - 
