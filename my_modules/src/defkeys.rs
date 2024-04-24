@@ -8,8 +8,9 @@ pub enum D_type {
     bool(bool),
 }
 
+
 #[derive(Debug, PartialEq, Clone)]
-pub enum Std_fns {PRNT, INCR, DECR}     // Standard - Builtin functions
+pub enum Std_fns {PRNT, COMPARE}     // Standard - Builtin functions
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Operation { ADD, SUB, MUL, DIV}       // Arithmetic operations
@@ -24,10 +25,18 @@ pub enum MemType {int, float, str, bool}    // Memory Types
 pub enum ID{ id(String) }               // For Variables or other data_types
 
 #[derive(Debug, PartialEq, Clone)]          
-pub enum ControlFlow {JUMP}
+pub struct  JUMPIF {pub n: i32}
 
 #[derive(Debug, PartialEq, Clone)]          
-pub enum MemInst {MOV, DEL, INSERT}       // Memory Instruction CALLED IN MAINSEC
+pub enum MemInst {MOV, DEL}       // Memory Instruction CALLED IN MAINSEC
+
+#[derive(Debug, PartialEq, Clone)]          
+pub enum CompOp {GREATER, LESS, EQUAL}       // Comparing (< > ==)
+
+#[derive(Debug, PartialEq, Clone)]          
+pub enum ExpType {MATH_EXP, STDFN_EXP, MEM_INST_EXP, CONDITION}       // Types of expression
+
+
 //--------------------------------------------------------------------------------\\
 
 #[derive(Debug, PartialEq, Clone)]
@@ -39,9 +48,36 @@ pub enum Builtins {
     MemType(MemType),
     MemInst(MemInst),
     ID(String),
-    ControlFlow(ControlFlow),
-    Comment
+    Comment,
+    CMP(CompOp),
+    Expr{
+        exp_type: ExpType,
+        expr: Vec<Builtins>
+    },
+
+    JUMPIF {
+        n: i32,
+        expr: Vec<Builtins>
+    },
 }
+
+impl PartialOrd for Builtins {    
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        match (self, other) {
+            (Builtins::D_type(D_type::int(a)), Builtins::D_type(D_type::int(b))) => a.partial_cmp(b),
+            (Builtins::D_type(D_type::float(a)), Builtins::D_type(D_type::float(b))) => a.partial_cmp(b),
+            (Builtins::D_type(D_type::str(a)), Builtins::D_type(D_type::str(b))) => a.partial_cmp(b),
+            (Builtins::D_type(D_type::bool(a)), Builtins::D_type(D_type::bool(b))) => a.partial_cmp(b),
+            
+
+            ( Builtins::D_type(D_type::int(a)) , Builtins::D_type(D_type::float(b))) => (*a as f32).partial_cmp( b ),
+            ( Builtins::D_type(D_type::float(a)) , Builtins::D_type(D_type::int(b))) => a.partial_cmp( &(*b as f32) ),
+
+            _ => None, // Return None if types are different and cannot be compared
+        }
+    }
+}
+
 
 impl Builtins {
     pub fn builtin_hash() -> HashMap<String, Builtins> {
@@ -52,6 +88,7 @@ impl Builtins {
                 ( "DIV".to_string(), Builtins::Operation(Operation::DIV) ), 
 
                 ( "PRNT".to_string(), Builtins::Std_fns(Std_fns::PRNT) ),       // Std fns
+                ( "COMPARE".to_string(), Builtins::Std_fns(Std_fns::COMPARE) ),       
 
                 ( "_VARS:".to_string(), Builtins::Section(Section::VARS) ),     // Section
                 ( "_END:".to_string(), Builtins::Section(Section::END) ),
@@ -65,11 +102,12 @@ impl Builtins {
 
                 ("MOV".to_string(), Builtins::MemInst(MemInst::MOV)),           // MemInst
                 ("DEL".to_string(), Builtins::MemInst(MemInst::DEL)),
-                ("INSERT".to_string(), Builtins::MemInst(MemInst::INSERT)),
 
-                ("JUMP".to_string(), Builtins::ControlFlow(ControlFlow::JUMP)),     // ControlFlow
+                ("==".to_string(), Builtins::CMP(CompOp::EQUAL)),
+                (">".to_string(), Builtins::CMP(CompOp::GREATER)),
+                ("<".to_string(), Builtins::CMP(CompOp::LESS)),
 
-                ("crap->".to_string(), Builtins::Comment)       // Comment
+                ("crap:-".to_string(), Builtins::Comment)       // Comment
 
         ])
     }
