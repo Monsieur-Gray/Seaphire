@@ -36,6 +36,10 @@
 <h2> STANDARD LIBRARY </h2>
 
 - `PRNT` - used to print a value
-- - usage --> `PRNT <?>`    **?** -> *Value, Variable, Expression, another function's return value etc.* 
-  - 
-- 
+  - usage --> `PRNT <?>`    **?** -> *Value, Variable, Expression, another function's return value etc.* 
+- More functions will be added soon!!
+
+
+<h2> EXPRESSIONS </h2>
+
+- `Math_expression`:- syntax -> `OPERATION NUM1 NUM2 .....` (*each arithmetic statement is a math_expression*)
