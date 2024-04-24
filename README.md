@@ -28,6 +28,6 @@
 
 <h2> ARITHMETICS </h2>
 
-- **Syntax** --> `OPERATION NUM1 NUM2 .....`
+- **Syntax** --> `OPERATION NUM1 NUM2 .....` (any arbitrary number of operands)
 - The following operations are currently supported --> `ADD , SUB , MULL , DIV`
 - If the expression is standalone , the expression is evaluated and directly printed.
