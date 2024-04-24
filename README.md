@@ -25,3 +25,9 @@
 - **Variables are immutable by default!**
 - To make a mutable variable , just add a '?' at the start of its name! :)
 - Boolean variables can be `true` or `false`
+
+<h2> ARITHMETICS </h2>
+
+- **Syntax** --> `OPERATION NUM1 NUM2 .....`
+- The following operations are currently supported --> `ADD , SUB , MULL , DIV`
+- If the expression is standalone , the expression is evaluated and directly printed.
