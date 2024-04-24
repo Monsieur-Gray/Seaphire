@@ -3,7 +3,10 @@ name = "main_project"
 version = "0.1.0"
 edition = "2021"
 
+ 
 [dependencies]
-my_modules =  {path = "./my_modules"}
-builtin_fns =  {path = "./builtin_fns"}
+my_modules =  {path = "../my_modules"}
+builtin_fns =  {path = "../builtin_fns"}
 colored = "2.1.0"
+pest = "2.7.9"
+pest_derive = "2.7.9"
