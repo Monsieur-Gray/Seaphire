@@ -21,5 +21,6 @@
 - The following is the structure for declaring variables :--> ` <MemType> <Name> <Value>`
   - MemType ==> `int`  , `float` , `str` or `bool`
 
+- To declare Strings , use ' ' (single-inverted commas)
 - **Variables are immutable by default!**
 - To make a mutable variable , just add a '?' at the start of its name! :)
