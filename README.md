@@ -14,6 +14,8 @@ Bruh , I made it in Python originally , but I later switched to Rust while learn
   - **?** :- The number of variables declared should be stated.
   - All variables must have a value while declaration.
   - The section must end with `EOS!`
+ 
+
     
 - `_MAIN: ...... _END:` section:-
 - - This is the main block like other languages.
