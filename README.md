@@ -16,7 +16,6 @@
 
 
 <h2> Variables </h2>
-<h3> Declaration </h3>
 
 - The following is the structure for declaring variables :--> ` <MemType> <Name> <Value>`
     - MemType --> `int`  , `float` , `str` or `bool`
@@ -26,8 +25,17 @@
 - To make a mutable variable , just add a '?' at the start of its name! :)
 - Boolean variables can be `true` or `false`
 
+
 <h2> ARITHMETICS </h2>
 
 - **Syntax** --> `OPERATION NUM1 NUM2 .....` (any arbitrary number of operands)
 - The following operations are currently supported --> `ADD , SUB , MULL , DIV`
 - If the expression is standalone , the expression is evaluated and directly printed.
+- If not , the expression **Returns the value** which can be used by other functions.
+
+<h2> STANDARD LIBRARY </h2>
+
+- `PRNT` - used to print a value
+- - usage --> `PRNT <?>`    **?** -> *Value, Variable, Expression, another function's return value etc.* 
+  - 
+- 
