@@ -45,9 +45,14 @@
 - `Math_expression`:- syntax -> `OPERATION NUM1 NUM2 .....` (*each arithmetic statement is a math_expression*).
   
 - `Conditional_expression`:-
+  - `[ X <conditional_operator> Y ]` --> Conditional operators are *> , < , ==*  (<= & => are not supported)
   -  A conditional_expression can be used in **Loops** or can be PRINTED :).
   -  To declare a conditional expression , enclose it in `[..]`.
   -  EG :- `PRNT [2 > 4]` -> `false`.
     
 - `Standard_expression` :- All other expressions are generally classified as *Standard_expressions* like *PRNT* statements.
 - Other expressions should not be worried about as they are for parsing purposes only.
+
+*******************************
+*******************************
+<h2> LOOPS </h2>
