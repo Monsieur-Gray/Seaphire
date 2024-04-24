@@ -7,5 +7,11 @@ It is an interpretted language made in rust.
 Bruh , I made it in Python originally , but I later switched to Rust while learning it _(Thank God!)_.
 
 # Documentation
-- <h2> Variables </h2>
+<h2> Sections </h2>
+
+- *`_VARS:`* section:-
+- - All variables must be declared here.
+  - The number of variables declared should be stated.
+  - All variables must have a value while declaration.
+  -  
 - 
