@@ -9,9 +9,10 @@ Bruh , I made it in Python originally , but I later switched to Rust while learn
 # Documentation
 <h2> Sections </h2>
 
-- *`_VARS:`* section:-
+- `_VARS: .... EOS!` section:-
 - - All variables must be declared here.
   - The number of variables declared should be stated.
   - All variables must have a value while declaration.
   - The section must end with `EOS!`
+    
 - 
