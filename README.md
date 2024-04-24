@@ -27,5 +27,7 @@ Bruh , I made it in Python originally , but I later switched to Rust while learn
 <h3> Declaration </h3>
 
 - The following is the structure for declaring variables :--> ` <MemType> <Name> <Value>`
-  - MemType ==> `int` , `float`, `str` or `bool`
-- - 
+  - MemType ==> `int`  , `float` , `str` or `bool`
+
+- **Variables are immutable by default!**
+- To make a mutable variable , just add a '?' at the start of its name! :)
