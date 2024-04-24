@@ -24,5 +24,8 @@ Bruh , I made it in Python originally , but I later switched to Rust while learn
 
 
 <h2> Variables </h2>
+<h3> Declaration </h3>
 
-- dec
+- The following is the structure for declaring variables :--> ` <MemType> <Name> <Value>`
+  - MemType ==> `int` , `float`, `str` or `bool`
+- - 
