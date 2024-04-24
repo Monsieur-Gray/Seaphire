@@ -37,17 +37,17 @@
 
 - `PRNT` - used to print a value
   - usage --> `PRNT <?>`    **?** -> *Value, Variable, Expression, another function's return value etc.* 
-- More functions will be added soon!!
+- More functions will be added soon!!.
 
 
 <h2> EXPRESSIONS </h2>
 
-- `Math_expression`:- syntax -> `OPERATION NUM1 NUM2 .....` (*each arithmetic statement is a math_expression*)
+- `Math_expression`:- syntax -> `OPERATION NUM1 NUM2 .....` (*each arithmetic statement is a math_expression*).
   
 - `Conditional_expression`:-
-  -  A conditional_expression can be used in **Loops** or can be PRINTED :)
-  -  To declare a conditional expression , enclose it in `[..]`
-  -  EG :- `PRNT [2 > 4]` -> `false`
+  -  A conditional_expression can be used in **Loops** or can be PRINTED :).
+  -  To declare a conditional expression , enclose it in `[..]`.
+  -  EG :- `PRNT [2 > 4]` -> `false`.
     
-- `Standard_expression` :- All other expressions are generally classified as *Standard_expressions* like *PRNT* statements
-- !Other 
+- `Standard_expression` :- All other expressions are generally classified as *Standard_expressions* like *PRNT* statements.
+- Other expressions should not be worried about as they are for parsing purposes only.
