@@ -1,0 +1,11 @@
+_VARS: 2
+    int ?hi 0
+    int max 10
+EOS!
+
+_MAIN:
+    PRNT hi
+    MOV hi ADD hi 1
+    JUMPIF -2 [hi < max]
+    PRNT 'done'
+_END:

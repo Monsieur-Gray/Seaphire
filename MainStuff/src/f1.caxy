@@ -1,22 +1,9 @@
-_VARS: 5
-    int Age 69
-    int Decim 12.1
-    str Gen 'bruh'
-    str ?Name 'Gray'
-    bool Alive true
+_VARS: 2
+    int Age 69.420
+    str name 'Inu'
 EOS!
 
 _MAIN:
-    ADD 2 3 5
-    PRNT 'Hallo'
-    PRNT 'Good Morning'
-    SUB 10 23
-
-crap-> This is a comment
-crap->  this is another comment
-    ADD 1000 500
-    MUL 20 12
-    PRNT Age
-    PRNT Name
-
+    PRNT ADD 23 5
+    PRNT ADD Age 1
 _END:

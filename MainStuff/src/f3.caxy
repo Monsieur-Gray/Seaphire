@@ -5,6 +5,6 @@ EOS!
 
 _MAIN:
     PRNT mutab
-    MOV mutab ADD 2 5
+    MOV mutab ADD mutab 5
     PRNT mutab
 _END:

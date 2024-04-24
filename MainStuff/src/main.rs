@@ -1,27 +1,32 @@
 #![allow(non_snake_case)]
+#![allow(unused_variables)]
+#![allow(unused)]
 
 use my_modules::*;
-use my_modules::defkeys::Builtins;
+use my_modules::PARSER::pest_parse;
 
-use builtin_fns::EXECUTE::check_exec_line;
-// use builtin_fns::COMPILE::compile_to_cpp;
-// use builtin_fns::compile_ass::compile_to_asm;
+use my_modules::PARSER;
+use builtin_fns::EXECUTE    ::new_check_exec_line;
+
 
 fn main() {
-    let text = read_file::read_from_str("f1.caxy");
+    use std::fs::read_to_string;
+    let txt = if let Ok(bruh) = read_to_string("f4.caxy") {
+        bruh
+    }
+    else {
+        crate::SysThrow!("I can't find this fucking file!\n\tYOU HAD ONE JOB!")
+    };     
 
-    let CODE: Vec<Vec<Builtins>> = get_type::get_type(text);
+    let (mvec, vvec) = pest_parse(&txt);
 
-    let (_msec, _vsec) = split_sec::split_code(CODE);
     
-    let (STACK, HEAP) = mem_alloc::calloc(_vsec);
-        
-// //--=-=-=-=-==-=-=-==============------------------------------------=-=-=-=-=-==-=-------------------------------
-    println!("<================-================>");
-    check_exec_line(&_msec, STACK, HEAP);
-    // compile_to_cpp(&_msec, STACK, HEAP);
-    // compile_to_asm(&_msec, STACK, HEAP);
-    println!("<================-================>");
-//--=-=-=-=-==-=-=-==============------------------------------------=-=-=-=-=-==-=-------------------------------
+    let MSEC = PARSER::make_msec(mvec);
+    // for i in MSEC {
+    //     println!("---> {:?}\n", i);
+    // };
+    
+    let (sh, hh) = PARSER::calloc(vvec);
+    new_check_exec_line(&MSEC, sh, hh);
 
 }
