@@ -5,3 +5,5 @@ edition = "2021"
 
 [dependencies]
 colored = "2.1.0"
+pest = "2.7.9"
+pest_derive = "2.7.9"
