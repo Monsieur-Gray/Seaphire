@@ -51,7 +51,7 @@
   -  EG :- `PRNT [2 > 4]` -> `false`.
     
 - `Standard_expression` :- All other expressions are generally classified as *Standard_expressions* like *PRNT* statements.
-- `MEMORY-inst_expr` :- [An Internal Link to a Section Heading][(#variable-mutation)]
+- `MEMORY-inst_expr` :- [An Internal Link to a Section Heading](#variable-mutation)
 
   
 - Other expressions should not be worried about as they are for parsing purposes only.
