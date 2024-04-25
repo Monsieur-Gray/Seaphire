@@ -59,5 +59,8 @@
 
 Traditional loops are for f@ggs, here we are talking serious shit!
 In Caxy, we use the `JUMPIF` expression (thou shant be scared)
-- Syntax :- `JUMPIF <±n> <conditional expression>/<X> `
+- Syntax :- `JUMPIF ±n <conditional expression>/<X> `
+- Here , **+/- n** is the number of lines ahead(+) or behind (-) you want to go :)
+- The 2nd argument can be a simple *conditional_expression* or a *boolean variable*
+- 
 - 
