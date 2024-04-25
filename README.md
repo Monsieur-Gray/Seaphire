@@ -57,4 +57,7 @@
 *******************************
 <h2> LOOPS </h2>
 
-Traditional loops are for faggots, here we are talking serious shit!
+Traditional loops are for f@ggs, here we are talking serious shit!
+In Caxy, we use the `JUMPIF` expression (thou shant be scared)
+- Syntax :- `JUMPIF <±n> <conditional expression>/<X> `
+- 
