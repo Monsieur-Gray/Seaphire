@@ -52,7 +52,8 @@
     
 - `Standard_expression` :- All other expressions are generally classified as *Standard_expressions* like *PRNT* statements.
 - `MEMORY-inst_expr` :- Refer [Variable Mutation](#-variable-mutation-)
-- *Example:-*
+- Other expressions should not be worried about as they are for parsing purposes only.
+*Example:-*
 ```
 _VARS: 3
     int a 10
@@ -64,10 +65,13 @@ _MAIN:
     PRNT b
     ADD a b c
     PRNT SUB c a
+    PRNT [a > b]
 _END:
 ```
+Output :--> 
+```
 
-- Other expressions should not be worried about as they are for parsing purposes only.
+```
 
 *******************************
 
