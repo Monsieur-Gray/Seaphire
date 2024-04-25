@@ -51,17 +51,18 @@
   -  EG :- `PRNT [2 > 4]` -> `false`.
     
 - `Standard_expression` :- All other expressions are generally classified as *Standard_expressions* like *PRNT* statements.
-- `MEMORY-inst_expr` :-
-  - `MOV X Y` --> X is the variable you wanna mutate (must be mutable)
-  - *Y* can be specified value, Standard_expression, Math_expression or another Variable
-  - 
+- `MEMORY-inst_expr` :- [An Internal Link to a Section Heading](#variable-mutation)
+
+  
 - Other expressions should not be worried about as they are for parsing purposes only.
 
 *******************************
 
-<h2> **VARIABLE MUTATION** </h2>
+<h2> VARIABLE MUTATION </h2>
 
-
+  - `MOV X Y` --> X is the variable you wanna mutate (must be mutable).
+  - *Y* can be specified value, Standard_expression, Math_expression or another Variable
+ 
 *******************************
 *******************************
 <h2> LOOPS </h2>
