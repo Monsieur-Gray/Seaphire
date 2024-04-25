@@ -57,8 +57,14 @@
 _VARS: 3
     int a 10
     int b 20
-    int ?c 69
+    int c 69
 EOS!
+_MAIN:
+    PRNT a
+    PRNT b
+    ADD a b c
+    PRNT SUB c a
+_END:
 ```
 
   
