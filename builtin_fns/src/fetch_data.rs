@@ -49,6 +49,24 @@ pub fn fetch_MyRes(data: &Builtins) -> MyRes<i32, f32, String, bool> {
     }
 }
 
+
+pub fn get_val(var: &Builtins,
+    stack_hash: &std::collections::HashMap<String, Builtins>,
+    heap_hash: &std::collections::HashMap<String, Builtins> ) -> Option<Builtins>
+{
+    let a = match var {
+        Builtins::D_type(_) => Some(var.clone()),
+        Builtins::ID(id) => {
+            if let Some(v) = stack_hash.get( id ) { Some(v.clone()) }
+            else if let Some(v) = heap_hash.get( id ){ Some(v.clone()) }
+            else { return None; }
+        },
+        _ => None
+    };
+    
+    return a;
+}
+
 #[derive(Debug)]
 pub enum MyRes<I, F, S, B>{
     Int(I),

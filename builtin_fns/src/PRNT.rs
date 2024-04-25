@@ -1,8 +1,8 @@
 use colored::Colorize;
-use my_modules::{
-    defkeys::*,
-    fetch_data::{fetch_bool, fetch_num, fetch_str},
-};
+use my_modules::defkeys::*;
+
+use crate::fetch_data::{fetch_bool, fetch_num, fetch_str, get_val};
+
 use std::collections::HashMap;
 
 pub fn print_line(
@@ -82,19 +82,4 @@ fn print_var(var_nam: String, mem_hash: &HashMap<String, Builtins>) {
     };
 }
 
-fn get_val(var: &Builtins,
-    stack_hash: &std::collections::HashMap<String, Builtins>,
-    heap_hash: &std::collections::HashMap<String, Builtins> ) -> Option<Builtins>
-{
-    let a = match var {
-        Builtins::D_type(_) => var,
-        Builtins::ID(id) => {
-            if let Some(v) = stack_hash.get( id ) { v }
-            else if let Some(v) = heap_hash.get( id ){ v }
-            else { return None; }
-        },
-        _ => crate::Throw!("What in actual fuck is this")
-    };
-    
-    return Some(a.clone());
-}
+

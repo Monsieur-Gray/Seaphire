@@ -1,9 +1,8 @@
 use std::collections::HashMap;
 
 use my_modules::defkeys::*;
-use my_modules::fetch_data::fetch_Univ;
 
-use crate::fetch_data::fetch_num;
+use crate::fetch_data::{fetch_num, get_val};
 use crate::Throw;
 
 fn caxy_add(operands: &Vec<Builtins>,
@@ -11,15 +10,9 @@ fn caxy_add(operands: &Vec<Builtins>,
     heap_hash: &HashMap<String, Builtins>
 ) -> f32 {
     let answer: f32 = operands.iter().map(|i| {
-        match i {
-            Builtins::D_type(_) => fetch_num(i).unwrap(),
-            Builtins::ID(var) => {
-                fetch_num(
-                    stack_hash.get(var).or_else(|| heap_hash.get(var))
-                        .unwrap_or_else(|| panic!("caxy-add ::> cant find the variable you asked for"))
-                ).unwrap()
-            },
-            other => Throw!(format!("ADD_2 isnt made for {:?}", other))
+        match get_val(i, &stack_hash, &heap_hash) {
+            Some(v) => fetch_num(&v).unwrap(),
+            None => Throw!(format!("ADD_2 isnt made for {:?}", i))
         }
     }).sum();
     
@@ -31,18 +24,15 @@ fn caxy_sub(operands: &Vec<Builtins>,               //SUBTRACTION
     heap_hash: &HashMap<String, Builtins>
 ) -> f32 {
     
-    let mut answer: f32 = 2.0 * fetch_Univ(&operands[0]).unwrap();
-    operands.iter().skip(1).for_each(|i| {
-        let num = match i {
-            Builtins::D_type(_) => fetch_num(i).unwrap(),
-            Builtins::ID(var) => {
-                fetch_num(
-                    stack_hash.get(var).or_else(|| heap_hash.get(var))
-                        .unwrap_or_else(|| panic!("caxy-sub ::> Cannot find the variable"))
+    let mut answer: f32 = match get_val(&operands[0], &stack_hash, &heap_hash) {
+        Some(v) => fetch_num(&v).unwrap(),
+        None => Throw!(format!("SUB_2 isnt made for {:?}", &operands[0]))
+    };    // For the offset!
 
-                    ).unwrap_or_else(|var| Throw!(format!("SUB isnt made for {:?}", var)) )
-            },
-            other => Throw!(format!("SUB isnt made for {:?}", other))
+    operands.iter().skip(1).for_each(|i| {
+        let num: f32 = match get_val(i, &stack_hash, &heap_hash) {
+            Some(v) => fetch_num(&v).unwrap(),
+            None => Throw!(format!("SUB_2 isnt made for {:?}", i))
         };
         answer -= num;
     });
@@ -54,49 +44,42 @@ fn caxy_mul(operands: &Vec<Builtins>,
     stack_hash: &HashMap<String, Builtins>,
     heap_hash: &HashMap<String, Builtins>
 ) -> f32 {
-    let mut answer: f32 = 1.0;
-    for i in operands {
-        let num = match i {
-            Builtins::D_type(_) => fetch_num(i).unwrap(),
-            Builtins::ID(var) => {
-                let num = stack_hash.get(var)
-                    .or_else(|| heap_hash.get(var))
-                    .unwrap_or_else(|| panic!("caxy-mul ::> Cannot find the variable {:?}", var));
 
-                fetch_num(num).unwrap_or_else(|var| Throw!(format!("MUL isn't made for {:?}", var)))
-            },
-            other => Throw!(format!("MUL isn't made for {:?}", other)),
+    let mut answer: f32 = 1.0;
+    operands.iter().for_each(|i| {
+        let num = match get_val(i, &stack_hash, &heap_hash) {
+            Some(v) => fetch_num(&v).unwrap(),
+            None => Throw!(format!("MUL_2 isnt made for {:?}", i))
         };
         answer *= num;
-    }
-        return answer;
+    });
+
+    return answer;
 }
 
 fn caxy_div(operands: &Vec<Builtins>,   
     stack_hash: &HashMap<String, Builtins>,
     heap_hash: &HashMap<String, Builtins>
 ) -> f32 {
-    let mut answer: f32 = fetch_Univ(&operands[0]).unwrap().powi(2);
-    for i in operands {
-        let num = match i {
-            Builtins::D_type(_) => fetch_num(i).unwrap(),
-            Builtins::ID(var) => {
-                let num = stack_hash.get(var)
-                    .or_else(|| heap_hash.get(var))
-                    .unwrap_or_else(|| panic!("caxy-div ::> Cannot find the variable {:?}", var));
 
-                fetch_num(num).unwrap_or_else(|var| Throw!(format!("DIV isn't made for {:?}", var)))
-            },
-            other => Throw!(format!("DIV isn't made for {:?}", other)),
+    let mut answer: f32 = match get_val(&operands[0], &stack_hash, &heap_hash) {
+        Some(v) => fetch_num(&v).unwrap(),
+        None => Throw!(format!("DIV_2 isnt made for {:?}", &operands[0]))
+    }.powi(2);      // For the offset!
+
+    operands.iter().for_each(|i| {
+        let num = match get_val(i, &stack_hash, &heap_hash) {
+            Some(v) => fetch_num(&v).unwrap(),
+            None => Throw!(format!("DIV_2 isnt made for {:?}", i))
         };
-    
         if num != 0.0 {
             answer /= num;
         } else {
             Throw!("Who in the actual fuck divides by 0? Because I can't, and neither can Einstein!");
         }
-    }
-        return answer;
+    });
+            
+    return answer;
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------
