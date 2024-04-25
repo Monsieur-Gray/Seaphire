@@ -67,7 +67,6 @@ _MAIN:
 _END:
 ```
 
-  
 - Other expressions should not be worried about as they are for parsing purposes only.
 
 *******************************
@@ -76,6 +75,21 @@ _END:
 
   - `MOV X Y` --> X is the variable you wanna mutate (must be mutable).
   - *Y* can be specified value, Standard_expression, Math_expression or another Variable
+  - Example :-
+```
+_VARS: 3
+    int a 10
+    int b 20
+    int c 69
+EOS!
+_MAIN:
+    PRNT c
+    MOV c a
+    PRNT c
+    MOV c MUL a b
+    PRNT c
+_END:
+```
  
 *******************************
 *******************************
