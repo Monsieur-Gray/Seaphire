@@ -56,3 +56,5 @@
 *******************************
 *******************************
 <h2> LOOPS </h2>
+
+Traditional loops are for faggots, here we are talking serious shit!
