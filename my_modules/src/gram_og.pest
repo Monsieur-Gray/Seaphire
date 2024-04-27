@@ -1,36 +1,41 @@
 ws = _{" "*}
 newln = _{("\r\n" | "\n") ~ ws}
-special_chars = _{"*"| "?"| "#"| "@"| "!"}
+special_chars = _{"*"| "?"| "#"| "@"}
 char = _{ASCII_ALPHANUMERIC | special_chars }
+decimal = _{"."}
 
 
 INT = @{("-"){0,1} ~ ASCII_DIGIT+}
-FLOAT = @{ASCII_DIGIT+ ~ ".."* }
+FLOAT = @{ASCII_DIGIT+ ~ws~ decimal ~ws~ ASCII_DIGIT+}
 STRLIT = @{( "\'" ~ws~   (char | " "+)*   ~ws~ "\'" )}
 ID = @{"?"{0,1} ~ws~ char+}
 BOOL = @{("true" | "false")}
-conditional_oper = {"==" | ">" | "<"}
-D_TYPE = _{ BOOL | INT | FLOAT | STRLIT | ID  }
+D_TYPE = _{ BOOL | FLOAT | INT | STRLIT | ID  }
 
 
-Std_fn = {"PRNT"}
+Std_fn = {"PRNT" | "PRNT_COOL"}
 Operations = { "ADD" | "SUB" | "MUL" | "DIV" }
 MemType = { "int" | "float" | "str" | "bool" }
 MemInst = { "MOV" | "DEL" }
 Comment = {"crap:-" ~ws~ (char | " "+)*}
+conditional_oper = {"==" | "!=" | ">" | "<" }
+logical_oper = {"&&" | "||" }
 
 
 var_make = { ws ~ MemType ~ws~ ID ~ws~ (D_TYPE) ~ws}
 vsec = {"_VARS:" ~ws~ INT ~newln* ~ (var_make ~ newln*)* ~ws~ "EOS!"}
 
 
-stdfn_expr = {Std_fn ~ (ws~ (math_expr | conditional_expr | D_TYPE ) )+ ~ws}
-math_expr = {Operations ~ (ws~ D_TYPE)+ ~ws}
+stdfn_expr = {Std_fn ~ (ws~ (math_expr | logical_expr | D_TYPE ) )+ ~ws}
+math_expr = {Operations ~ (ws~ (D_TYPE))+ ~ws}
 mem_inst_expr = {MemInst ~ws~ ID ~ws~ (math_expr | stdfn_expr | D_TYPE) ~ws}
-conditional_expr = {"[" ~ws~ INT ~ws~ conditional_oper ~ws~ D_TYPE ~ws~ "]" ~ws}
-jump_expr = {"JUMPIF" ~ws~ INT ~ws~ (BOOL | conditional_expr) ~ws}
 
-parent_expr = _{ws~ (stdfn_expr | mem_inst_expr | math_expr | jump_expr | conditional_expr | Comment) ~ws~ newln* }
+condition = {D_TYPE ~ws~ conditional_oper ~ws~ D_TYPE }
+logical_expr = {"[" ~ws~ (condition | logical_expr) ~ws~ (ws~ logical_oper ~ws~ (condition | logical_expr)){0,1} ~ws~ "]" ~ws}
+
+jump_expr = {"JUMPIF" ~ws~ INT ~ws~ (BOOL | logical_expr) ~ws}
+
+parent_expr = _{ws~ (stdfn_expr | mem_inst_expr | math_expr | jump_expr | logical_expr | Comment) ~ws~ newln* }
 
 msec = {"_MAIN:" ~newln*~ parent_expr* ~ "_END:"}
 

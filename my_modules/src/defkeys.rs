@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+// use crate::Throw;
+
 #[derive(Debug, PartialEq, Clone)] 
 pub enum D_type {
     int(i32),
@@ -8,9 +10,8 @@ pub enum D_type {
     bool(bool),
 }
 
-
 #[derive(Debug, PartialEq, Clone)]
-pub enum Std_fns {PRNT, COMPARE}     // Standard - Builtin functions
+pub enum Std_fns {PRNT_COOL, PRNT_PLAIN}     // Standard - Builtin functions
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Operation { ADD, SUB, MUL, DIV}       // Arithmetic operations
@@ -31,10 +32,12 @@ pub struct  JUMPIF {pub n: i32}
 pub enum MemInst {MOV, DEL}       // Memory Instruction CALLED IN MAINSEC
 
 #[derive(Debug, PartialEq, Clone)]          
-pub enum CompOp {GREATER, LESS, EQUAL}       // Comparing (< > ==)
+pub enum CompOp {GREATER, LESS, EQUAL, UNEQUAL}       // Comparing (< > == !=)
+#[derive(Debug, PartialEq, Clone)]          
+pub enum Logical_Op {AND, OR}       // Logical Operators (&& ||)
 
 #[derive(Debug, PartialEq, Clone)]          
-pub enum ExpType {MATH_EXP, STDFN_EXP, MEM_INST_EXP, CONDITION}       // Types of expression
+pub enum ExpType {MATH_EXP, STDFN_EXP, MEM_INST_EXP, CONDITION, LOGIC_EXP}       // Types of expression
 
 
 //--------------------------------------------------------------------------------\\
@@ -50,6 +53,7 @@ pub enum Builtins {
     ID(String),
     Comment,
     CMP(CompOp),
+    Logic(Logical_Op),
     Expr{
         exp_type: ExpType,
         expr: Vec<Builtins>
@@ -78,8 +82,26 @@ impl PartialOrd for Builtins {
     }
 }
 
-
 impl Builtins {
+
+    pub fn unwrap_expr_vec(&self) -> Result<&Vec<Builtins>, String>{
+        match self {
+            Builtins::Expr { exp_type: _, expr } => {
+                return Ok(expr);
+            },
+            other => Err(format!("Not an expression! -> {:?}", other))
+        }
+    }
+
+    pub fn get_expression_type(&self) -> Result<&ExpType, String> {
+        match self {
+            Builtins::Expr { exp_type, expr: _ } => {
+                return Ok(exp_type);
+            },
+            other => Err(format!("Not an expression! -> {:?}", other))
+        }
+    }
+
     pub fn builtin_hash() -> HashMap<String, Builtins> {
         HashMap::from([
                 ( "ADD".to_string(), Builtins::Operation(Operation::ADD) ),     //Operation
@@ -87,8 +109,9 @@ impl Builtins {
                 ( "MUL".to_string(), Builtins::Operation(Operation::MUL) ), 
                 ( "DIV".to_string(), Builtins::Operation(Operation::DIV) ), 
 
-                ( "PRNT".to_string(), Builtins::Std_fns(Std_fns::PRNT) ),       // Std fns
-                ( "COMPARE".to_string(), Builtins::Std_fns(Std_fns::COMPARE) ),       
+                ( "PRNT".to_string(), Builtins::Std_fns(Std_fns::PRNT_PLAIN) ),       // Std fns
+                ( "PRNT_COOL".to_string(), Builtins::Std_fns(Std_fns::PRNT_COOL) ), 
+                       
 
                 ( "_VARS:".to_string(), Builtins::Section(Section::VARS) ),     // Section
                 ( "_END:".to_string(), Builtins::Section(Section::END) ),
@@ -104,8 +127,12 @@ impl Builtins {
                 ("DEL".to_string(), Builtins::MemInst(MemInst::DEL)),
 
                 ("==".to_string(), Builtins::CMP(CompOp::EQUAL)),
+                ("!=".to_string(), Builtins::CMP(CompOp::UNEQUAL)),
                 (">".to_string(), Builtins::CMP(CompOp::GREATER)),
                 ("<".to_string(), Builtins::CMP(CompOp::LESS)),
+
+                ( "&&".to_string(), Builtins::Logic(Logical_Op::AND) ),
+                ( "||".to_string(), Builtins::Logic(Logical_Op::OR) ),
 
                 ("crap:-".to_string(), Builtins::Comment)       // Comment
 

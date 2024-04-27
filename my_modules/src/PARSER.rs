@@ -12,7 +12,7 @@ pub struct CaxyParser;
 pub fn pest_parse(unparsed_filestr: &String) -> (Option<Pair<Rule>>, Option<Pair<Rule>>){
     let file = match CaxyParser::parse(Rule::file, unparsed_filestr.as_str()) {
         Ok(mut outp) => outp.next().unwrap(),
-        Err(_) => panic!("Shit occured!")
+        Err(_) => panic!("I ain't gonna tell you where ya FUCKED UP ; but YOU FUCKED UP somewhere ")
     };
     let mut vvec = None;
     let mut mvec = None;
@@ -80,13 +80,15 @@ pub fn make_msec(msec: Option<Pair<Rule>>) -> Vec<Vec<Builtins>>{
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 fn parse_dtype(p: Pair<Rule>) -> Option<Builtins> {
     let pstr = p.as_str();
+    // println!("## {:?}", pstr);
     let output = match p.as_rule() {
         Rule::INT =>    Some(  Builtins::D_type( D_type::int(pstr.parse::<i32>().unwrap()) )    ),
         Rule::FLOAT =>  Some(  Builtins::D_type( D_type::float(pstr.parse::<f32>().unwrap()) )  ),
         Rule::BOOL =>   Some(  Builtins::D_type( D_type::bool(pstr.parse::<bool>().unwrap()) )  ),
         Rule::STRLIT => Some(  Builtins::D_type( D_type::str(pstr.to_string()) )    ),
         Rule::ID =>     Some(  Builtins::ID    ( pstr.to_string() )  ),
-        _ =>   None,
+        _ => None
+        // bum =>  Throw!(format!("Bum -> {:?}", bum)),
     };
     return output;
 }
@@ -114,12 +116,16 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>) -> 
 
         Rule::stdfn_expr => {
             let mut exp_vec = vec![];
-
+            
             for expr_iter in line.clone().into_inner() {
+                // println!("---> {:?}", &expr_iter);
                 match expr_iter.as_rule() {
-                    Rule::Std_fn => exp_vec.push(  builtins_hash.get(expr_iter.as_str()).unwrap().to_owned() ),
-                    Rule::math_expr => exp_vec.push( parse_exprs(&expr_iter, builtins_hash)[0].to_owned() ),
-                    Rule::conditional_expr => exp_vec.push( parse_exprs(&expr_iter, builtins_hash)[0].to_owned() ),
+                    Rule::Std_fn | Rule::logical_oper => exp_vec.push(  builtins_hash.get(expr_iter.as_str()).unwrap().to_owned() ),
+
+                    Rule::math_expr | Rule::logical_expr=> exp_vec.push( parse_exprs(&expr_iter, builtins_hash)[0].to_owned() ),
+                    
+                    Rule::condition => exp_vec.push( parse_exprs(&expr_iter, builtins_hash)[0].to_owned() ),
+
                     _ => exp_vec.push(  parse_dtype( expr_iter ).unwrap()  )
                 }
             };
@@ -128,7 +134,7 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>) -> 
         },
 
         Rule::mem_inst_expr => {
-            let mut exp_vec = vec![];
+            let mut exp_vec: Vec<Builtins> = vec![];
 
             for expr_iter in line.clone().into_inner() {
                 match expr_iter.as_rule() {
@@ -140,18 +146,6 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>) -> 
             line_vec.push(Builtins::Expr { exp_type: ExpType::MEM_INST_EXP,  expr: exp_vec  });
         },
 
-        Rule::conditional_expr => {
-            let mut exp_vec = vec![];
-
-            for expr_iter in line.clone().into_inner() {
-                match expr_iter.as_rule() {
-                    Rule::conditional_oper => exp_vec.push(  builtins_hash.get(expr_iter.as_str()).unwrap().to_owned() ),
-                    _  => exp_vec.push(  parse_dtype( expr_iter ).unwrap()  ),
-                }
-            };
-            line_vec.push(Builtins::Expr { exp_type: ExpType::CONDITION,  expr: exp_vec  });
-        }
-
         Rule::jump_expr => {
             let mut n = 0;
             let mut cond = vec![];
@@ -159,23 +153,40 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>) -> 
             for val in line.clone().into_inner() {
                 match val.as_rule() {
                     Rule::INT => {  n = val.as_str().parse::<i32>().unwrap();  },
-                    Rule::BOOL => { cond.push( parse_dtype(val).unwrap() ); },
-
-                    Rule::conditional_expr => {
-                        for i in val.into_inner() {
-                            match parse_dtype(i.clone()) {
-                                Some(val) => cond.push(val),
-                                None => cond.push( builtins_hash.get(i.as_str())
-                                .unwrap_or_else(|| Throw!("Function Not found")).to_owned())
-                            };
-                        };
-                    },
+                    Rule::BOOL => cond.push( parse_dtype(val).unwrap() ),
+                    Rule::logical_expr => cond.push( parse_exprs(&val, builtins_hash)[0].to_owned() ),
 
                     _ => continue
                 };
             };
             line_vec.push(Builtins::JUMPIF { n , expr: cond});
         },
+
+
+        Rule::logical_expr => {
+            let mut exp_vec: Vec<Builtins> = vec![];
+
+            for expr_iter in line.clone().into_inner() {
+                match expr_iter.as_rule() {
+                    Rule::condition | Rule::logical_expr => exp_vec.push( parse_exprs(&expr_iter, builtins_hash)[0].to_owned() ),
+                    Rule::logical_oper => exp_vec.push(  builtins_hash.get(expr_iter.as_str()).unwrap().to_owned() ),
+                    _  => continue,
+                }
+            };
+            line_vec.push(Builtins::Expr { exp_type: ExpType::LOGIC_EXP,  expr: exp_vec  });
+        }
+
+        Rule::condition => {
+            let mut exp_vec = vec![];
+            for expr_iter in line.clone().into_inner() {
+                match expr_iter.as_rule() {
+                    Rule::conditional_oper => exp_vec.push(  builtins_hash.get(expr_iter.as_str()).unwrap().to_owned() ),
+                    _  => exp_vec.push(  parse_dtype( expr_iter ).unwrap()  ),
+                }
+            };
+            line_vec.push(Builtins::Expr { exp_type: ExpType::CONDITION,  expr: exp_vec  });
+        } 
+        
 
         damn => Throw!( format!("parse_exprs: Bruh --> {:?}\n", damn) )
     };

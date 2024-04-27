@@ -3,44 +3,7 @@ use crate::defkeys::*;
 use crate::fetch_data::*;
 use crate::Throw;
 
-// [MemType(int), ID("Age"), D_type(int(69))] ------------------------- new
-pub fn calloc(vsec: Vec<Vec<Builtins>>) -> (HashMap<String, Builtins>, HashMap<String, Builtins>) {
-    let mut stack_hash: HashMap<String, Builtins> = HashMap::new();
-    let mut heap_hash: HashMap<String, Builtins> = HashMap::new();
-
-    for line in vsec {
-        let key = fetch_str(&line.get(1).unwrap() ).unwrap();
-        let val = line.last().unwrap().clone();
-
-        if key.starts_with('?') {
-            heap_hash.insert(key[1..].to_string(), val);
-        }
-        else {
-            stack_hash.insert(key, val);
-        };
-    };
-    return (stack_hash, heap_hash);
-}
-
 //--------------------------------------------------------------------------------------------------------------------------------------
-pub fn free_mem<'b>(var_nam: &String,
-    stack_hash: &mut HashMap<String, Builtins>,
-    heap_hash: &mut HashMap<String, Builtins>
-) {
-    if let Some(_) = stack_hash.get(var_nam) {
-        stack_hash.remove(var_nam);
-    }
-    else if let Some(_) = heap_hash.get(var_nam) {
-        heap_hash.remove(var_nam);
-    }
-    else {
-        crate::Throw!(format!("FREE_MEM ::> No variable named '{}'", var_nam));
-    };
-}
-
-//--------------------------------------------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------------------------------------------
-// D_type(str("Engineer"))
 pub fn mutate_mem <'b> ( line: &'b Vec<Builtins>,     
         stack_hash: &HashMap<String, Builtins>,
         mut heap_clone: HashMap<String, Builtins>)     -> HashMap<String, Builtins>
@@ -97,7 +60,7 @@ pub fn insert_to_mem <'b> (
 
 //--------------------------------------------------------------------------
 
-pub fn check_compatible(v1: &Builtins, v2: &Builtins, allowModif: bool) -> bool {
+fn check_compatible(v1: &Builtins, v2: &Builtins, allowModif: bool) -> bool {
     match (v1, v2){
         (Builtins::D_type(D_type::int(_)), Builtins::D_type(D_type::int(_))) => true,
         (Builtins::D_type(D_type::float(_)), Builtins::D_type(D_type::float(_))) => true,

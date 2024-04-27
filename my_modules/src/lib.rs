@@ -1,7 +1,6 @@
 #![allow(non_camel_case_types, non_snake_case)]
 
 pub mod defkeys;
-pub mod read_file;
 pub mod mem_alloc;
 pub mod fetch_data; // also available in builtin_fns
 pub mod PARSER;
