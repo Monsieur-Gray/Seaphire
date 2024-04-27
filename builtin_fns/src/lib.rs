@@ -5,10 +5,9 @@ extern crate colored;
 pub mod ARITHMETIC;
 pub mod fetch_data;
 pub mod PRNT;
-// pub mod COMPILE;
-// pub mod compile_ass;
-// pub mod Comparator;
 pub mod EXECUTE;
+pub mod Compare;
+pub mod Input;
 
 #[macro_export]
 macro_rules! Throw {

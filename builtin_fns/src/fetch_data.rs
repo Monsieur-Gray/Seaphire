@@ -55,17 +55,20 @@ pub fn get_val(var: &Builtins,
     heap_hash: &std::collections::HashMap<String, Builtins> ) -> Option<Builtins>
 {
     let a = match var {
-        Builtins::D_type(_) => Some(var.clone()),
+        Builtins::D_type(_) => var,
         Builtins::ID(id) => {
-            if let Some(v) = stack_hash.get( id ) { Some(v.clone()) }
-            else if let Some(v) = heap_hash.get( id ){ Some(v.clone()) }
-            else { return None; }
+            if let Some(v) = stack_hash.get( id ) { v }
+            else if let Some(v) = heap_hash.get( id ){ v }
+            else { 
+                crate::Throw!(format!("No variable named {:?}", id))
+            }
         },
-        _ => None
+        x => crate::Throw!( format!("What in actual fuck is this {:?}", x))
     };
     
-    return a;
+    return Some(a.clone());
 }
+
 
 #[derive(Debug)]
 pub enum MyRes<I, F, S, B>{

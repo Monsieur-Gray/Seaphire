@@ -1,5 +1,3 @@
-use std::cmp::Ordering;
-
 use my_modules::defkeys::*;
 use my_modules::mem_alloc::{mutate_mem, insert_to_mem};
 
@@ -25,7 +23,12 @@ pub fn new_check_exec_line(
 
     // standard functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         Builtins::Expr { exp_type: ExpType::STDFN_EXP, expr} => {       // For now , only PRNT exists
-            let _ = crate::PRNT::print_line(expr, &stack_hash, heap_hash.clone() ); 
+            let isCool = match &expr[0] {
+                Builtins::Std_fns(Std_fns::PRNT_COOL) => true,
+                Builtins::Std_fns(Std_fns::PRNT_PLAIN) => false,
+                _ => Throw!("exec::expr -> Expected something good")
+            };
+            let _ = crate::PRNT::print_line(expr, &stack_hash, &heap_hash, isCool); 
         },
 
     // MEMORY INSTRUCTIONS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -72,37 +75,11 @@ pub fn new_check_exec_line(
 
 //CONTROL FLOW-----------------------------MUST BE CHANGED LATER!--------------------------------------------------------------------
         Builtins::JUMPIF { n: num, expr: condition } =>  {
-            if condition.len() == 1 {
-                if crate::fetch_data::fetch_bool(condition.get(0).unwrap()).unwrap(){
-                    if num < &0 { line_num += num - 1 }
-                    else { line_num += num}
-                };
+            let condition_isTrue: bool = crate::Compare::eval_condition(condition, &stack_hash, &heap_hash).unwrap();
+            if condition_isTrue{
+                continue;
             }
-            else {      //if we have a conditional expression, parse it
-                
-                let lhs = get_val(condition.get(0).unwrap(), &stack_hash, &heap_hash).unwrap();
-                let rhs = get_val(condition.get(2).unwrap(), &stack_hash, &heap_hash).unwrap();
-
-                let oper = condition.get(1).unwrap();
-                let ans = lhs.partial_cmp(&rhs).unwrap();
-                
-                let eval_expr = match (oper, ans) {
-                    ( Builtins::CMP(CompOp::EQUAL), Ordering::Equal ) => true,
-                    ( Builtins::CMP(CompOp::LESS), Ordering::Less ) => true,
-                    ( Builtins::CMP(CompOp::GREATER), Ordering::Greater ) => true,
-                    _ => false
-                };
-
-                if eval_expr {
-                    if num < &0 { 
-                        line_num += num - 1;
-                    }
-                    else { 
-                        line_num += num;
-                    }
-                }
-                
-            };
+            else { line_num += num; }                
         },
 
 //ERROR HANDLING-----------------------------------------------------------------------------------------------------------------
@@ -117,19 +94,3 @@ pub fn new_check_exec_line(
 
 
 
-fn get_val(var: &Builtins,
-    stack_hash: &std::collections::HashMap<String, Builtins>,
-    heap_hash: &std::collections::HashMap<String, Builtins> ) -> Option<Builtins>
-{
-    let a = match var {
-        Builtins::D_type(_) => var,
-        Builtins::ID(id) => {
-            if let Some(v) = stack_hash.get( id ) { v }
-            else if let Some(v) = heap_hash.get( id ){ v }
-            else { return None; }
-        },
-        _ => Throw!("What in actual fuck is this")
-    };
-    
-    return Some(a.clone());
-}

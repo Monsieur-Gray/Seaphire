@@ -5,7 +5,7 @@ use my_modules::defkeys::*;
 use crate::fetch_data::{fetch_num, get_val};
 use crate::Throw;
 
-fn caxy_add(operands: &Vec<Builtins>,
+fn seaphire_add(operands: &Vec<Builtins>,
     stack_hash: &HashMap<String, Builtins>,
     heap_hash: &HashMap<String, Builtins>
 ) -> f32 {
@@ -19,7 +19,7 @@ fn caxy_add(operands: &Vec<Builtins>,
     return answer;
 }
 
-fn caxy_sub(operands: &Vec<Builtins>,               //SUBTRACTION
+fn seaphire_sub(operands: &Vec<Builtins>,               //SUBTRACTION
     stack_hash: &HashMap<String, Builtins>,
     heap_hash: &HashMap<String, Builtins>
 ) -> f32 {
@@ -40,7 +40,7 @@ fn caxy_sub(operands: &Vec<Builtins>,               //SUBTRACTION
     return answer;
 }
 
-fn caxy_mul(operands: &Vec<Builtins>,
+fn seaphire_mul(operands: &Vec<Builtins>,
     stack_hash: &HashMap<String, Builtins>,
     heap_hash: &HashMap<String, Builtins>
 ) -> f32 {
@@ -57,7 +57,7 @@ fn caxy_mul(operands: &Vec<Builtins>,
     return answer;
 }
 
-fn caxy_div(operands: &Vec<Builtins>,   
+fn seaphire_div(operands: &Vec<Builtins>,   
     stack_hash: &HashMap<String, Builtins>,
     heap_hash: &HashMap<String, Builtins>
 ) -> f32 {
@@ -102,7 +102,7 @@ pub fn perf_math(line: &Vec<Builtins>,
         
 //----------------------------ADDITION----------------------------------------------
     if line[0] == Builtins::Operation(Operation::ADD) {
-        let ans = caxy_add(&Vec::from(&line[1..]), &stack_hash, heap_hash);
+        let ans = seaphire_add(&Vec::from(&line[1..]), &stack_hash, heap_hash);
 
         if should_print {
             println!("answer (+) ---= {}", 
@@ -114,7 +114,7 @@ pub fn perf_math(line: &Vec<Builtins>,
     }
 //----------------------------SUBTRACTION----------------------------------------------
     else if line[0] == Builtins::Operation(Operation::SUB){
-        let ans = caxy_sub(&Vec::from(&line[1..]), &stack_hash, heap_hash);
+        let ans = seaphire_sub(&Vec::from(&line[1..]), &stack_hash, heap_hash);
 
         if should_print {
             println!("answer (-) ---= {}", 
@@ -125,7 +125,7 @@ pub fn perf_math(line: &Vec<Builtins>,
     }
 //----------------------------MULTIPLICATION----------------------------------------------
     else if line[0] == Builtins::Operation(Operation::MUL){
-        let ans = caxy_mul(&Vec::from(&line[1..]), &stack_hash, heap_hash);
+        let ans = seaphire_mul(&Vec::from(&line[1..]), &stack_hash, heap_hash);
 
         if should_print {
             println!("answer (*) ---= {}", 
@@ -136,7 +136,7 @@ pub fn perf_math(line: &Vec<Builtins>,
     }
 //--------------------------------DIVISION----------------------------------------------
     else if line[0] == Builtins::Operation(Operation::DIV){
-        let ans = caxy_div(&Vec::from(&line[1..]), &stack_hash, heap_hash);
+        let ans = seaphire_div(&Vec::from(&line[1..]), &stack_hash, heap_hash);
 
         if should_print {
             println!("answer (/) ---= {}", 
