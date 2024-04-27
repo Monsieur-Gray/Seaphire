@@ -1,9 +1,0 @@
-_VARS: 2
-    int Age 69.420
-    str name 'Inu'
-EOS!
-
-_MAIN:
-    PRNT ADD 23 5
-    PRNT ADD Age 1
-_END:
