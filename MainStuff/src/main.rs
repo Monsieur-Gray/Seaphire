@@ -6,12 +6,12 @@ use my_modules::*;
 use my_modules::PARSER::pest_parse;
 
 use my_modules::PARSER;
-use builtin_fns::EXECUTE    ::new_check_exec_line;
+use builtin_fns::EXECUTE::new_check_exec_line;
 
 
 fn main() {
     use std::fs::read_to_string;
-    let txt = if let Ok(bruh) = read_to_string("f4.caxy") {
+    let txt = if let Ok(bruh) = read_to_string("f4.inu") {
         bruh
     }
     else {
@@ -21,11 +21,15 @@ fn main() {
     let (mvec, vvec) = pest_parse(&txt);
 
     
-    let MSEC = PARSER::make_msec(mvec);
-    // for i in MSEC {
-    //     println!("---> {:?}\n", i);
+    // for i in mvec.unwrap().into_inner() {
+    //     println!("---> {:#?}\n", i);
     // };
-    
+
+    let MSEC = PARSER::make_msec(mvec);
+    // for i in &MSEC {
+    //     println!("---> {:#?}\n", i);
+    // };
+
     let (sh, hh) = PARSER::calloc(vvec);
     new_check_exec_line(&MSEC, sh, hh);
 
