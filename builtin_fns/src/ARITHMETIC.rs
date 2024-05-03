@@ -7,10 +7,11 @@ use crate::Throw;
 
 fn seaphire_add(operands: &Vec<Builtins>,
     stack_hash: &HashMap<String, Builtins>,
-    heap_hash: &HashMap<String, Builtins>
+    heap_hash: &HashMap<String, Builtins>,
+    reg_hash: &HashMap<String, Builtins>
 ) -> f32 {
     let answer: f32 = operands.iter().map(|i| {
-        match get_val(i, &stack_hash, &heap_hash) {
+        match get_val(i, stack_hash, heap_hash, reg_hash) {
             Some(v) => fetch_num(&v).unwrap(),
             None => Throw!(format!("ADD_2 isnt made for {:?}", i))
         }
@@ -21,16 +22,17 @@ fn seaphire_add(operands: &Vec<Builtins>,
 
 fn seaphire_sub(operands: &Vec<Builtins>,               //SUBTRACTION
     stack_hash: &HashMap<String, Builtins>,
-    heap_hash: &HashMap<String, Builtins>
+    heap_hash: &HashMap<String, Builtins>,
+    reg_hash: &HashMap<String, Builtins>
 ) -> f32 {
     
-    let mut answer: f32 = match get_val(&operands[0], &stack_hash, &heap_hash) {
+    let mut answer: f32 = match get_val(&operands[0], stack_hash, heap_hash, reg_hash) {
         Some(v) => fetch_num(&v).unwrap(),
         None => Throw!(format!("SUB_2 isnt made for {:?}", &operands[0]))
     };    // For the offset!
 
     operands.iter().skip(1).for_each(|i| {
-        let num: f32 = match get_val(i, &stack_hash, &heap_hash) {
+        let num: f32 = match get_val(i, stack_hash, heap_hash, reg_hash) {
             Some(v) => fetch_num(&v).unwrap(),
             None => Throw!(format!("SUB_2 isnt made for {:?}", i))
         };
@@ -42,12 +44,13 @@ fn seaphire_sub(operands: &Vec<Builtins>,               //SUBTRACTION
 
 fn seaphire_mul(operands: &Vec<Builtins>,
     stack_hash: &HashMap<String, Builtins>,
-    heap_hash: &HashMap<String, Builtins>
+    heap_hash: &HashMap<String, Builtins>,
+    reg_hash: &HashMap<String, Builtins>
 ) -> f32 {
 
     let mut answer: f32 = 1.0;
     operands.iter().for_each(|i| {
-        let num = match get_val(i, &stack_hash, &heap_hash) {
+        let num = match get_val(i, stack_hash, heap_hash, reg_hash) {
             Some(v) => fetch_num(&v).unwrap(),
             None => Throw!(format!("MUL_2 isnt made for {:?}", i))
         };
@@ -59,16 +62,17 @@ fn seaphire_mul(operands: &Vec<Builtins>,
 
 fn seaphire_div(operands: &Vec<Builtins>,   
     stack_hash: &HashMap<String, Builtins>,
-    heap_hash: &HashMap<String, Builtins>
+    heap_hash: &HashMap<String, Builtins>,
+    reg_hash: &HashMap<String, Builtins>
 ) -> f32 {
 
-    let mut answer: f32 = match get_val(&operands[0], &stack_hash, &heap_hash) {
+    let mut answer: f32 = match get_val(&operands[0], stack_hash, heap_hash, reg_hash) {
         Some(v) => fetch_num(&v).unwrap(),
         None => Throw!(format!("DIV_2 isnt made for {:?}", &operands[0]))
     }.powi(2);      // For the offset!
 
     operands.iter().for_each(|i| {
-        let num = match get_val(i, &stack_hash, &heap_hash) {
+        let num = match get_val(i, stack_hash, heap_hash, reg_hash) {
             Some(v) => fetch_num(&v).unwrap(),
             None => Throw!(format!("DIV_2 isnt made for {:?}", i))
         };
@@ -88,21 +92,21 @@ fn seaphire_div(operands: &Vec<Builtins>,
 pub fn perf_math(line: &Vec<Builtins>, 
     stack_hash: &HashMap<String, Builtins>,
     heap_hash: &HashMap<String, Builtins>,
+    reg_hash: &HashMap<String, Builtins>,
     should_print: bool
 ) -> f32 {
     use colored::*;
-
     for i in &line[1..] {   
         match i {
-            Builtins::D_type(D_type::int(_)) | Builtins::D_type(D_type::float(_)) | Builtins::ID(_) => true,
+        Builtins::D_type(D_type::int(_)) | Builtins::D_type(D_type::float(_)) | Builtins::ID(_) => (),
             other =>  Throw!( format!(
-                    "\nINVALID SYNTAX ---> cant perform arithmetic on non-numerical values {:?}\n", other
+                "\nINVALID SYNTAX ---> cant perform arithmetic on non-numerical values {:?}\n", other
             ))
     };};
-        
+
 //----------------------------ADDITION----------------------------------------------
     if line[0] == Builtins::Operation(Operation::ADD) {
-        let ans = seaphire_add(&Vec::from(&line[1..]), &stack_hash, heap_hash);
+        let ans = seaphire_add(&Vec::from(&line[1..]), stack_hash, heap_hash, reg_hash);
 
         if should_print {
             println!("answer (+) ---= {}", 
@@ -114,7 +118,7 @@ pub fn perf_math(line: &Vec<Builtins>,
     }
 //----------------------------SUBTRACTION----------------------------------------------
     else if line[0] == Builtins::Operation(Operation::SUB){
-        let ans = seaphire_sub(&Vec::from(&line[1..]), &stack_hash, heap_hash);
+        let ans = seaphire_sub(&Vec::from(&line[1..]), stack_hash, heap_hash, reg_hash);
 
         if should_print {
             println!("answer (-) ---= {}", 
@@ -125,7 +129,7 @@ pub fn perf_math(line: &Vec<Builtins>,
     }
 //----------------------------MULTIPLICATION----------------------------------------------
     else if line[0] == Builtins::Operation(Operation::MUL){
-        let ans = seaphire_mul(&Vec::from(&line[1..]), &stack_hash, heap_hash);
+        let ans = seaphire_mul(&Vec::from(&line[1..]), stack_hash, heap_hash, reg_hash);
 
         if should_print {
             println!("answer (*) ---= {}", 
@@ -136,7 +140,7 @@ pub fn perf_math(line: &Vec<Builtins>,
     }
 //--------------------------------DIVISION----------------------------------------------
     else if line[0] == Builtins::Operation(Operation::DIV){
-        let ans = seaphire_div(&Vec::from(&line[1..]), &stack_hash, heap_hash);
+        let ans = seaphire_div(&Vec::from(&line[1..]), stack_hash, heap_hash, reg_hash);
 
         if should_print {
             println!("answer (/) ---= {}", 

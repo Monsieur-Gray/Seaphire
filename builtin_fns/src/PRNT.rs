@@ -10,6 +10,7 @@ pub fn print_line(
     line: &Vec<Builtins>,
     stack_hash: &HashMap<String, Builtins>,
     heap_hash: &HashMap<String, Builtins>,
+    reg_hash: &HashMap<String, Builtins>,
     isCool: bool
 ) -> String {
     match &line[1] {
@@ -30,19 +31,29 @@ pub fn print_line(
             if stack_hash.contains_key(id) {
                 print_var(id.to_string(), stack_hash, &isCool);
             } else {
-                print_var(id.to_string(), &heap_hash, &isCool);
+                print_var(id.to_string(), heap_hash, &isCool);
             };
             return id.to_string();
         },
 
+        Builtins::REGISTER(reg_id) => {
+            if reg_hash.contains_key(reg_id) {
+                print_var(reg_id.to_string(), reg_hash, &isCool);
+            }
+            else {
+                crate::Throw!( format!("The following register is empty/uninitialized > {}", reg_id));
+            }
+            return reg_id.to_string();
+        },
+
         Builtins::Expr { exp_type: ExpType::MATH_EXP, expr } => {
-            let ans =  crate::ARITHMETIC::perf_math(&expr, &stack_hash, &heap_hash, false).to_string();
+            let ans =  crate::ARITHMETIC::perf_math(expr, stack_hash, heap_hash, reg_hash, false).to_string();
             println!(":> {}", ans.truecolor(150, 150, 100).bold());
             return ans;
         },
 
         Builtins::Expr { exp_type: ExpType::CONDITION, expr: condition } => {
-            let eval_expr = Compare::eval_condition(condition, &stack_hash, &heap_hash)
+            let eval_expr = Compare::eval_condition(condition, stack_hash, heap_hash, reg_hash)
                 .unwrap()
                 .to_string();
             
@@ -50,7 +61,7 @@ pub fn print_line(
             return eval_expr;
         },
         Builtins::Expr { exp_type: ExpType::LOGIC_EXP, expr: condition } => {
-            let eval_expr = Compare::eval_condition(condition, &stack_hash, &heap_hash)
+            let eval_expr = Compare::eval_condition(condition, stack_hash, heap_hash, reg_hash)
                 .unwrap()
                 .to_string();
 
@@ -59,7 +70,7 @@ pub fn print_line(
         },
 
 
-        hmm => crate::Throw!(format!("No variable named {:?}", hmm)),
+        hmm => crate::Throw!(format!("PRNT:> No variable named {:?}", hmm)),
     }
 }
 
