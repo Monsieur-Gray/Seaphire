@@ -1,12 +1,10 @@
 #![allow(non_snake_case)]
-#![allow(unused)]
+// #![allow(unused)]
 
 use my_modules::*;
 use my_modules::PARSER::pest_parse;
-
 use my_modules::PARSER;
-use builtin_fns::EX2Cute::new_check_exec_line;
-
+use builtin_fns::EXECUTE::check_exec_line;
 
 fn main() {
     use std::fs::read_to_string;
@@ -19,7 +17,6 @@ fn main() {
 
     let (mvec, vvec) = pest_parse(&txt);
 
-    
     // for i in vvec.unwrap().into_inner() {
     //     println!("---> {:#?}\n", i);
     // };
@@ -30,7 +27,7 @@ fn main() {
     // };
 
     let [sh, hh, regh] = PARSER::calloc(vvec);
-    new_check_exec_line(&MSEC, sh, hh, regh);
+    check_exec_line(&MSEC, sh, hh, regh);
 }
 
 
@@ -49,16 +46,15 @@ mod tests {
         let MSEC = PARSER::make_msec(mvec);
         let [sh, hh, regh] = PARSER::calloc(vvec);
 
-        new_check_exec_line(&MSEC, sh, hh, regh);
+        check_exec_line(&MSEC, sh, hh, regh);
         Ok(())
     }
 
     #[test]
     fn verify_codebase() {
         for p in 1..6 {
-            verify_given_file(&p);
+            let _ = verify_given_file(&p);
             println!("\t TEST - {:?} WAS SUCCESSFUL!", p);
         }
     }
-
 }
