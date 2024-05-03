@@ -1,0 +1,8 @@
+_VARS: 2
+    float a 10.2
+    int b 20
+EOS!
+_MAIN:
+    MOV $1 ADD a b
+    PRNT_COOL $1
+_END:

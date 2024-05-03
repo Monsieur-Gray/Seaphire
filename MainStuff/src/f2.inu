@@ -6,6 +6,6 @@ EOS!
 
 _MAIN:
     PRNT wage
-    MOV wage ADD wage 1
+    MOV wage 2
     PRNT wage
 _END:

@@ -1,17 +1,16 @@
 #![allow(non_snake_case)]
-#![allow(unused_variables)]
 #![allow(unused)]
 
 use my_modules::*;
 use my_modules::PARSER::pest_parse;
 
 use my_modules::PARSER;
-use builtin_fns::EXECUTE::new_check_exec_line;
+use builtin_fns::EX2Cute::new_check_exec_line;
 
 
 fn main() {
     use std::fs::read_to_string;
-    let txt = if let Ok(bruh) = read_to_string("f4.inu") {
+    let txt = if let Ok(bruh) = read_to_string("f5.inu") {
         bruh
     }
     else {
@@ -21,16 +20,45 @@ fn main() {
     let (mvec, vvec) = pest_parse(&txt);
 
     
-    // for i in mvec.unwrap().into_inner() {
+    // for i in vvec.unwrap().into_inner() {
     //     println!("---> {:#?}\n", i);
     // };
 
     let MSEC = PARSER::make_msec(mvec);
     // for i in &MSEC {
-    //     println!("---> {:#?}\n", i);
+    //     println!("---> {:?}\n", i);
     // };
 
-    let (sh, hh) = PARSER::calloc(vvec);
-    new_check_exec_line(&MSEC, sh, hh);
+    let [sh, hh, regh] = PARSER::calloc(vvec);
+    new_check_exec_line(&MSEC, sh, hh, regh);
+}
+
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    fn verify_given_file(file_int: &i32) -> Result<(), ()>{
+        let file_name = format!("src/f{}.inu", file_int);
+        let txt = if let Ok(bruh) = std::fs::read_to_string(file_name) {  bruh  }
+        else {
+            crate::SysThrow!("I can't find this fucking file!\n\tYOU HAD ONE JOB!")
+        };     
+    
+        let (mvec, vvec) = pest_parse(&txt);
+        let MSEC = PARSER::make_msec(mvec);
+        let [sh, hh, regh] = PARSER::calloc(vvec);
+
+        new_check_exec_line(&MSEC, sh, hh, regh);
+        Ok(())
+    }
+
+    #[test]
+    fn verify_codebase() {
+        for p in 1..6 {
+            verify_given_file(&p);
+            println!("\t TEST - {:?} WAS SUCCESSFUL!", p);
+        }
+    }
 
 }

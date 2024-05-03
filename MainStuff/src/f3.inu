@@ -6,6 +6,9 @@ EOS!
 _MAIN:
     PRNT hi
     MOV hi ADD hi 1
-    JUMPIF -2 [hi < max]
+    JUMPIF -2 [hi < 5]
+    JUMPIF +1 true
+
     PRNT 'done'
+    PRNT 'boom'
 _END:

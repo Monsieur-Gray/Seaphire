@@ -1,5 +1,5 @@
 _VARS: 2
-    int Age 69.420
+    float Age 69.420
     str name 'Inu'
 EOS!
 
