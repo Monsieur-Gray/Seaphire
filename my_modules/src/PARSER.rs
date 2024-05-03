@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::hash::Hash;
 use pest::{Parser, iterators::Pair};
 use pest_derive::Parser;
+use crate::SysThrow;
 use crate::Throw;
 use crate::defkeys::*;
 
@@ -12,7 +13,7 @@ pub struct CaxyParser;
 pub fn pest_parse(unparsed_filestr: &String) -> (Option<Pair<Rule>>, Option<Pair<Rule>>){
     let file = match CaxyParser::parse(Rule::file, unparsed_filestr.as_str()) {
         Ok(mut outp) => outp.next().unwrap(),
-        Err(_) => panic!("I ain't gonna tell you where ya FUCKED UP ; but YOU FUCKED UP somewhere ")
+        Err(fucking_error) => crate::SysThrow!(format!( "SyntaxError at line: {}\n\nNo matching expression with the following format found" ,fucking_error ))
     };
     let mut vvec = None;
     let mut mvec = None;
@@ -26,9 +27,10 @@ pub fn pest_parse(unparsed_filestr: &String) -> (Option<Pair<Rule>>, Option<Pair
     return (mvec, vvec);
 }
 
-pub fn calloc(vinp: Option<Pair<Rule>>) -> (HashMap<String, Builtins>, HashMap<String, Builtins>) {
+pub fn calloc(vinp: Option<Pair<Rule>>) -> [HashMap<String, Builtins>; 3] {
     let mut line_num = -1;  // consider the extra first term (number of variables)
     let mut vsec_size = 0;
+
     let mut stack_hash: HashMap<String, Builtins> = HashMap::new();
     let mut heap_hash: HashMap<String, Builtins> = HashMap::new();
 
@@ -36,16 +38,28 @@ pub fn calloc(vinp: Option<Pair<Rule>>) -> (HashMap<String, Builtins>, HashMap<S
         match i.as_rule() {
             Rule::INT => {vsec_size = i.as_str().parse::<i32>().unwrap();},
             Rule::var_make => {
+                let mut memtype = "";
                 let mut id = String::new();
                 let mut data = Builtins::Comment;
 
-                for j in i.into_inner() {
+                for j in i.clone().into_inner() {
                     let jstr = j.as_str();
+
                     match j.as_rule() {
-                        Rule::MemType => continue,
+                        Rule::MemType => { memtype = jstr; },
                         Rule::ID => { id = jstr.to_string(); },
-                        _ => { data = parse_dtype(j).unwrap() }
+                        sometype => data = {
+                            match (sometype, memtype) {
+                                (Rule::INT, "int") => Builtins::D_type(D_type::int(jstr.parse::<i32>().unwrap())),
+                                (Rule::FLOAT, "float") => Builtins::D_type(D_type::float(jstr.parse::<f32>().unwrap())),
+                                (Rule::BOOL, "bool") => Builtins::D_type(D_type::bool(jstr.parse::<bool>().unwrap())),
+                                (Rule::STRLIT, "str") => Builtins::D_type(D_type::str(jstr.to_string())),
+
+                                (dtyp, vtyp) => Throw!( format!("VariableType [{:?}] and value of the variable [{:?}] do not match", vtyp, dtyp))
+                            }
+                         }
                     };
+
                 };
 
                 if id.starts_with('?') {
@@ -62,7 +76,10 @@ pub fn calloc(vinp: Option<Pair<Rule>>) -> (HashMap<String, Builtins>, HashMap<S
     };
 
     if line_num != vsec_size {  Throw!("Incorrect shit of variables");  }
-    else {  return (stack_hash, heap_hash);  };
+    else {  
+        let reg_hash: HashMap<String, Builtins> = HashMap::new();
+        return [stack_hash, heap_hash, reg_hash];
+    };
 }
 
 pub fn make_msec(msec: Option<Pair<Rule>>) -> Vec<Vec<Builtins>>{
@@ -86,9 +103,10 @@ fn parse_dtype(p: Pair<Rule>) -> Option<Builtins> {
         Rule::FLOAT =>  Some(  Builtins::D_type( D_type::float(pstr.parse::<f32>().unwrap()) )  ),
         Rule::BOOL =>   Some(  Builtins::D_type( D_type::bool(pstr.parse::<bool>().unwrap()) )  ),
         Rule::STRLIT => Some(  Builtins::D_type( D_type::str(pstr.to_string()) )    ),
-        Rule::ID =>     Some(  Builtins::ID    ( pstr.to_string() )  ),
+        Rule::REGISTER => Some(  Builtins::REGISTER(pstr.to_string()) ),
+        Rule::ID =>     Some(  Builtins::ID    ( pstr.to_string() )   ),
         _ => None
-        // bum =>  Throw!(format!("Bum -> {:?}", bum)),
+        // bum =>  Throw!(format!("Bum -> {:?}", (bum, pstr) )),
     };
     return output;
 }
@@ -97,7 +115,6 @@ fn parse_dtype(p: Pair<Rule>) -> Option<Builtins> {
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>) -> Vec<Builtins>{
     let mut line_vec = vec![];
-
     match line.as_rule() {
 
         Rule::math_expr  => {
@@ -125,7 +142,6 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>) -> 
                     Rule::math_expr | Rule::logical_expr=> exp_vec.push( parse_exprs(&expr_iter, builtins_hash)[0].to_owned() ),
                     
                     Rule::condition => exp_vec.push( parse_exprs(&expr_iter, builtins_hash)[0].to_owned() ),
-
                     _ => exp_vec.push(  parse_dtype( expr_iter ).unwrap()  )
                 }
             };
@@ -188,7 +204,8 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>) -> 
         } 
         
 
-        damn => Throw!( format!("parse_exprs: Bruh --> {:?}\n", damn) )
+        Rule::ErrLine  => Throw!( format!("SyntaxError in the following expression -!> {:?}\n", line.as_str() ) ),
+        _ => SysThrow!("I don't have any idea how you fucked up this bad (parse_exprs)")
     };
 
     return line_vec

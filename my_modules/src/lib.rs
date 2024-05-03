@@ -2,7 +2,8 @@
 
 pub mod defkeys;
 pub mod mem_alloc;
-pub mod fetch_data; // also available in builtin_fns
+pub mod reg_alloc;
+// pub mod DEFABfetch_data; // also available in builtin_fns
 pub mod PARSER;
 
 #[macro_export]

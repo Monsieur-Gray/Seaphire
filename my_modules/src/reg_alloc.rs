@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 use crate::defkeys::*;
-use crate::Throw;
+// use crate::Throw;
 
 //--------------------------------------------------------------------------------------------------------------------------------------
 fn fetch_str(data: &Builtins) -> Result<String, &str> {
     match data {
         Builtins::D_type(D_type::str( d )) => Ok(chk_qmark(d)),
-        Builtins::ID(d) => Ok(chk_qmark(d)),
-        _ => Err("fetch_str ::> Fetch Error!")
+        Builtins::ID(d) | Builtins::REGISTER(d) => Ok(chk_qmark(d)),
+        er => crate::Throw!( format!("fetch_str ::> Fetch Error! -# {:?}", er.clone()).as_str() )
     }
 }
 
@@ -20,21 +20,17 @@ fn chk_qmark(s: &String) -> String {
 
 //--------------------------------------------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------------------------------------------
-pub fn mutate_mem ( line: &Vec<Builtins>,     
+pub fn mutate_reg ( line: &Vec<Builtins>,     
         stack_hash: &HashMap<String, Builtins>,
-        mut heap_clone: HashMap<String, Builtins>)     -> HashMap<String, Builtins>
+        mut reg_clone: HashMap<String, Builtins>)     -> HashMap<String, Builtins>
 {
-    let keyname = fetch_str(&line[1]).unwrap();
-    let ol_val =  if let Some(nam) = heap_clone.get(&keyname) { nam } 
-    else {
-        Throw!( format!( "No MUTABLE variable named '{}' found\nMake sure its mutable", keyname) )
-    };
+    let register_id = fetch_str(&line[1]).unwrap();
 
     let new_val =  match &line[2] {
         Builtins::D_type(_) => &line[2],
         Builtins::ID(id) => {
             if let Some(v1) = stack_hash.get(id) {  v1  }
-            else if let Some(v2) = heap_clone.get(id) {  v2  }
+            else if let Some(v2) = reg_clone.get(id) {  v2  }
             else {
                 panic!("cry like a dog")
             }
@@ -42,29 +38,44 @@ pub fn mutate_mem ( line: &Vec<Builtins>,
         _ => panic!("You werent suppose tto put htat")
     }.clone() ;
 
-        if check_compatible(ol_val, &new_val, false) {
-            heap_clone.entry(keyname).and_modify(|e| *e = new_val );
-        };
+    match reg_clone.get(&register_id) {
+        Some(ol_val) => {
+            if check_compatible(ol_val, &new_val, false) {
+                reg_clone.entry(register_id).and_modify(|e| *e = new_val );
+            };
+        },
+        None => {
+            reg_clone.insert(register_id, new_val);
+        }
+    }
 
-        heap_clone
+    
+
+
+        reg_clone
     }
 
 //--------------------------------------------------------------------------------------------------------------------------------------
 
-pub fn insert_to_mem ( 
+pub fn insert_to_reg ( 
     line: &Vec<Builtins>,     
-    mut heap_clone: HashMap<String, Builtins>,
+    mut reg_clone: HashMap<String, Builtins>,
     direct_value: Builtins )     -> HashMap<String, Builtins>
 {
-    let keyname = fetch_str(&line[1]).unwrap().clone();
+    // println!("---> {:?}", &line);
+    let register_id = fetch_str(&line[1]).unwrap().clone();
 
-    let ol_val =  if let Some(nam) = heap_clone.get(&keyname) {  nam } 
-        else {  Throw!( format!( "No MUTABLE variable named '{}' found\nMake sure its mutable", keyname) )  };
-
-    if check_compatible(ol_val, &direct_value, true) {
-        heap_clone.entry(keyname).and_modify(|e| *e = direct_value );
+    match reg_clone.get(&register_id) {
+        Some(ol_val) => {
+            if check_compatible(ol_val, &direct_value, true) {
+                reg_clone.entry(register_id).and_modify(|e| *e = direct_value );
+            };
+        },
+        None => {
+            reg_clone.insert(register_id, direct_value);
+        }
     };
-    heap_clone
+    reg_clone
 }
 
 //--------------------------------------------------------------------------

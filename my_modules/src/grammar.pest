@@ -4,19 +4,20 @@ special_chars = _{"*"| "?"| "#"| "@"}
 char = _{ASCII_ALPHANUMERIC | special_chars }
 decimal = _{"."}
 
-
-INT = @{("-"){0,1} ~ ASCII_DIGIT+}
+INT = @{("-" | "+"){0,1} ~ ASCII_DIGIT+}
 FLOAT = @{ASCII_DIGIT+ ~ws~ decimal ~ws~ ASCII_DIGIT+}
 STRLIT = @{( "\'" ~ws~   (char | " "+)*   ~ws~ "\'" )}
 ID = @{"?"{0,1} ~ws~ char+}
 BOOL = @{("true" | "false")}
-D_TYPE = _{ BOOL | FLOAT | INT | STRLIT | ID  }
+REGISTER = @{"$" ~ ASCII_DIGIT}
+D_TYPE = _{ BOOL | REGISTER | FLOAT | INT | STRLIT | ID  }
+ErrLine = {(char | " " | "[" | "]")+}
 
 
-Std_fn = {"PRNT" | "PRNT_COOL"}
+Std_fn = {"PRNT_COOL" |"PRNT" | "SINPUT" }
 Operations = { "ADD" | "SUB" | "MUL" | "DIV" }
 MemType = { "int" | "float" | "str" | "bool" }
-MemInst = { "MOV" | "DEL" }
+MemInst = {"MOV" | "DEL"}
 Comment = {"crap:-" ~ws~ (char | " "+)*}
 conditional_oper = {"==" | "!=" | ">" | "<" }
 logical_oper = {"&&" | "||" }
@@ -27,16 +28,16 @@ vsec = {"_VARS:" ~ws~ INT ~newln* ~ (var_make ~ newln*)* ~ws~ "EOS!"}
 
 
 stdfn_expr = {Std_fn ~ (ws~ (math_expr | logical_expr | D_TYPE ) )+ ~ws}
-math_expr = {Operations ~ (ws~ (D_TYPE))+ ~ws}
-mem_inst_expr = {MemInst ~ws~ ID ~ws~ (math_expr | stdfn_expr | D_TYPE) ~ws}
+math_expr = {Operations ~ (ws~ D_TYPE)+ ~ws}
+mem_inst_expr = {MemInst ~ws~ (ID | REGISTER) ~ws~ (math_expr | stdfn_expr | D_TYPE) ~ws}
 
 condition = {D_TYPE ~ws~ conditional_oper ~ws~ D_TYPE }
 logical_expr = {"[" ~ws~ (condition | logical_expr) ~ws~ (ws~ logical_oper ~ws~ (condition | logical_expr)){0,1} ~ws~ "]" ~ws}
 
 jump_expr = {"JUMPIF" ~ws~ INT ~ws~ (BOOL | logical_expr) ~ws}
 
-parent_expr = _{ws~ (stdfn_expr | mem_inst_expr | math_expr | jump_expr | logical_expr | Comment) ~ws~ newln* }
+parent_expr = _{stdfn_expr | mem_inst_expr | math_expr | jump_expr | logical_expr | Comment | ErrLine}
 
-msec = {"_MAIN:" ~newln*~ parent_expr* ~ "_END:"}
+msec = {"_MAIN:" ~newln*~ (ws~ parent_expr ~ws~ newln*)* ~ "_END:"}
 
 file = { SOI ~ vsec ~newln*~ msec  ~ws~ EOI }

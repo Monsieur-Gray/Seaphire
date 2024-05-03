@@ -11,7 +11,7 @@ pub enum D_type {
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub enum Std_fns {PRNT_COOL, PRNT_PLAIN}     // Standard - Builtin functions
+pub enum Std_fns {PRNT_COOL, PRNT_PLAIN, SINPUT}     // Standard - Builtin functions
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Operation { ADD, SUB, MUL, DIV}       // Arithmetic operations
@@ -51,6 +51,7 @@ pub enum Builtins {
     MemType(MemType),
     MemInst(MemInst),
     ID(String),
+    REGISTER(String),
     Comment,
     CMP(CompOp),
     Logic(Logical_Op),
@@ -104,38 +105,37 @@ impl Builtins {
 
     pub fn builtin_hash() -> HashMap<String, Builtins> {
         HashMap::from([
-                ( "ADD".to_string(), Builtins::Operation(Operation::ADD) ),     //Operation
-                ( "SUB".to_string(), Builtins::Operation(Operation::SUB) ), 
-                ( "MUL".to_string(), Builtins::Operation(Operation::MUL) ), 
-                ( "DIV".to_string(), Builtins::Operation(Operation::DIV) ), 
+        ( "ADD".to_string(), Builtins::Operation(Operation::ADD) ),     //Operation
+        ( "SUB".to_string(), Builtins::Operation(Operation::SUB) ), 
+        ( "MUL".to_string(), Builtins::Operation(Operation::MUL) ), 
+        ( "DIV".to_string(), Builtins::Operation(Operation::DIV) ), 
 
-                ( "PRNT".to_string(), Builtins::Std_fns(Std_fns::PRNT_PLAIN) ),       // Std fns
-                ( "PRNT_COOL".to_string(), Builtins::Std_fns(Std_fns::PRNT_COOL) ), 
+        ( "PRNT".to_string(), Builtins::Std_fns(Std_fns::PRNT_PLAIN) ),       // Std fns
+        ( "PRNT_COOL".to_string(), Builtins::Std_fns(Std_fns::PRNT_COOL) ), 
+        ( "SINPUT".to_string(), Builtins::Std_fns(Std_fns::SINPUT) ), 
                        
+        ( "_VARS:".to_string(), Builtins::Section(Section::VARS) ),     // Section
+        ( "_END:".to_string(), Builtins::Section(Section::END) ),
+        ( "_MAIN:".to_string(), Builtins::Section(Section::MAIN) ),
+        ( "EOS!".to_string(), Builtins::Section(Section::EOS) ),
 
-                ( "_VARS:".to_string(), Builtins::Section(Section::VARS) ),     // Section
-                ( "_END:".to_string(), Builtins::Section(Section::END) ),
-                ( "_MAIN:".to_string(), Builtins::Section(Section::MAIN) ),
-                ( "EOS!".to_string(), Builtins::Section(Section::EOS) ),
+        ("int".to_string(), Builtins::MemType(MemType::int)),           // MemType
+        ("float".to_string(), Builtins::MemType(MemType::float)),
+        ("str".to_string(), Builtins::MemType(MemType::str)),
+        ("bool".to_string(), Builtins::MemType(MemType::bool)),
 
-                ("int".to_string(), Builtins::MemType(MemType::int)),           // MemType
-                ("float".to_string(), Builtins::MemType(MemType::float)),
-                ("str".to_string(), Builtins::MemType(MemType::str)),
-                ("bool".to_string(), Builtins::MemType(MemType::bool)),
+        ("MOV".to_string(), Builtins::MemInst(MemInst::MOV)),           // MemInst
+        ("DEL".to_string(), Builtins::MemInst(MemInst::DEL)),
 
-                ("MOV".to_string(), Builtins::MemInst(MemInst::MOV)),           // MemInst
-                ("DEL".to_string(), Builtins::MemInst(MemInst::DEL)),
+        ("==".to_string(), Builtins::CMP(CompOp::EQUAL)),
+        ("!=".to_string(), Builtins::CMP(CompOp::UNEQUAL)),
+        (">".to_string(), Builtins::CMP(CompOp::GREATER)),
+        ("<".to_string(), Builtins::CMP(CompOp::LESS)),
 
-                ("==".to_string(), Builtins::CMP(CompOp::EQUAL)),
-                ("!=".to_string(), Builtins::CMP(CompOp::UNEQUAL)),
-                (">".to_string(), Builtins::CMP(CompOp::GREATER)),
-                ("<".to_string(), Builtins::CMP(CompOp::LESS)),
+        ( "&&".to_string(), Builtins::Logic(Logical_Op::AND) ),
+        ( "||".to_string(), Builtins::Logic(Logical_Op::OR) ),
 
-                ( "&&".to_string(), Builtins::Logic(Logical_Op::AND) ),
-                ( "||".to_string(), Builtins::Logic(Logical_Op::OR) ),
-
-                ("crap:-".to_string(), Builtins::Comment)       // Comment
-
+        ("crap:-".to_string(), Builtins::Comment)       // Comment
         ])
     }
 
