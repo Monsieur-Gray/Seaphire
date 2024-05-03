@@ -6,7 +6,7 @@ use crate::fetch_data::fetch_bool;
 use crate::ARITHMETIC::perf_math;
 use crate::Throw;
 
-pub fn new_check_exec_line(
+pub fn check_exec_line(
     block: &Vec<Vec<Builtins>>,
     mut stack_hash:  std::collections::HashMap<String, Builtins>,
     mut heap_hash:   std::collections::HashMap<String, Builtins>,
