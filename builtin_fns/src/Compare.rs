@@ -5,7 +5,7 @@ use my_modules::Throw;
 use std::cmp::Ordering;
 
 pub fn eval_condition(
-    logic: &Vec<Builtins>,
+    logic: &Builtins,
     stack_hash: &std::collections::HashMap<String, Builtins>,
     heap_hash: &std::collections::HashMap<String, Builtins>,
     reg_hash: &std::collections::HashMap<String, Builtins>,
@@ -13,15 +13,17 @@ pub fn eval_condition(
 // Conditional = [x > y] or [x==y]
 // Logical = [ x>y || [x==y] ]
 
-    if logic[0].unwrap_expr_vec().unwrap().len() == 1 {       // For safety
-        match logic[0].get_expression_type().unwrap() {
+
+
+    if logic.unwrap_expr_vec().unwrap().len() == 1 {       // For safety
+        match logic.get_expression_type().unwrap() {
             ExpType::CONDITION => {
-                return Some(make_tree(&logic[0], stack_hash, heap_hash, reg_hash));
+                return Some(make_tree(&logic, stack_hash, heap_hash, reg_hash));
             },
             ExpType::LOGIC_EXP => {
-                match logic[0].unwrap_expr_vec().unwrap()[0] .get_expression_type().unwrap() {
+                match logic.unwrap_expr_vec().unwrap()[0] .get_expression_type().unwrap() {
                     ExpType::CONDITION => {
-                        return Some(make_tree(&logic[0].unwrap_expr_vec().unwrap()[0], stack_hash, heap_hash, reg_hash));
+                        return Some(make_tree(&logic.unwrap_expr_vec().unwrap()[0], stack_hash, heap_hash, reg_hash));
                     },
                     _ => Throw!("Creating redundant CONDITIONAL_EXPRESSIONS is not valid")
                 }
@@ -30,6 +32,10 @@ pub fn eval_condition(
         }
     }
     else {
+        
+        
+        let logic = logic.unwrap_expr_vec().unwrap();
+
         let lhs = &logic[0];
         let rhs = &logic[2];
 

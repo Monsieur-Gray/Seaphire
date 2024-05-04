@@ -79,7 +79,7 @@ fn seaphire_div(operands: &Vec<Builtins>,
         if num != 0.0 {
             answer /= num;
         } else {
-            Throw!("Who in the actual fuck divides by 0? Because I can't, and neither can Einstein!");
+            Throw!("Who in the actual fuck divides by 0? LIKE WHO IN THEIR RIGHT BLOODY MIND DIVIDES BY 0");
         }
     });
             
@@ -96,14 +96,6 @@ pub fn perf_math(line: &Vec<Builtins>,
     should_print: bool
 ) -> f32 {
     use colored::*;
-    for i in &line[1..] {   
-        match i {
-        Builtins::D_type(D_type::int(_)) | Builtins::D_type(D_type::float(_)) | Builtins::ID(_) => (),
-            other =>  Throw!( format!(
-                "\nINVALID SYNTAX ---> cant perform arithmetic on non-numerical values {:?}\n", other
-            ))
-    };};
-
 //----------------------------ADDITION----------------------------------------------
     if line[0] == Builtins::Operation(Operation::ADD) {
         let ans = seaphire_add(&Vec::from(&line[1..]), stack_hash, heap_hash, reg_hash);

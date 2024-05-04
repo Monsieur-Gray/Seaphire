@@ -12,19 +12,16 @@ pub fn print_line(
     heap_hash: &HashMap<String, Builtins>,
     reg_hash: &HashMap<String, Builtins>,
     isCool: bool
-) -> String {
+)  {
     match &line[1] {
         Builtins::D_type(D_type::str(strn)) => {
-            println!(":> {}", strn.truecolor(150, 150, 100).bold());
-            return strn.to_string();
+            println!(":> {}", strn.replace('\'', "").truecolor(150, 150, 100).bold());
         }
         Builtins::D_type(D_type::int(i)) => {
             println!(":> {}", i.to_string().truecolor(150, 150, 100).bold());
-            return i.to_string();
         }
         Builtins::D_type(D_type::bool(b)) => {
             println!(":> {}", b.to_string().truecolor(150, 150, 100).bold());
-            return b.to_string();
         }
 
         Builtins::ID(id) => {
@@ -33,7 +30,6 @@ pub fn print_line(
             } else {
                 print_var(id.to_string(), heap_hash, &isCool);
             };
-            return id.to_string();
         },
 
         Builtins::REGISTER(reg_id) => {
@@ -43,32 +39,26 @@ pub fn print_line(
             else {
                 crate::Throw!( format!("The following register is empty/uninitialized > {}", reg_id));
             }
-            return reg_id.to_string();
         },
 
         Builtins::Expr { exp_type: ExpType::MATH_EXP, expr } => {
-            let ans =  crate::ARITHMETIC::perf_math(expr, stack_hash, heap_hash, reg_hash, false).to_string();
-            println!(":> {}", ans.truecolor(150, 150, 100).bold());
-            return ans;
+            crate::ARITHMETIC::perf_math(expr, stack_hash, heap_hash, reg_hash, true).to_string();
         },
 
         Builtins::Expr { exp_type: ExpType::CONDITION, expr: condition } => {
-            let eval_expr = Compare::eval_condition(condition, stack_hash, heap_hash, reg_hash)
+            let eval_expr = Compare::eval_condition(&condition[1], stack_hash, heap_hash, reg_hash)
                 .unwrap()
                 .to_string();
             
             println!(":> {}", eval_expr.truecolor(150, 150, 100).bold());
-            return eval_expr;
         },
         Builtins::Expr { exp_type: ExpType::LOGIC_EXP, expr: condition } => {
-            let eval_expr = Compare::eval_condition(condition, stack_hash, heap_hash, reg_hash)
+            let eval_expr = Compare::eval_condition(&condition[1], stack_hash, heap_hash, reg_hash)
                 .unwrap()
                 .to_string();
 
             println!(":> {}", eval_expr.truecolor(150, 150, 100).bold());
-            return eval_expr;
         },
-
 
         hmm => crate::Throw!(format!("PRNT:> No variable named {:?}", hmm)),
     }
