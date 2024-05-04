@@ -1,11 +1,14 @@
-_VARS: 3
-    str name 'Hello there'
-    str job 'Hacker'
-    int ?wage 147
+_VARS: 2
+    int ?hi 0
+    int max 5
 EOS!
 
 _MAIN:
-    PRNT wage
-    MOV wage 2
-    PRNT wage
+    PRNT hi
+    MOV hi ADD hi 1
+    JUMPIF -2 [hi < 5]
+    JUMPIF +1 true
+
+    PRNT 'done'
+    PRNT 'boom'
 _END:

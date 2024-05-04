@@ -3,15 +3,16 @@
 
 use my_modules::*;
 use my_modules::PARSER::pest_parse;
+
 use my_modules::PARSER;
 use builtin_fns::EXECUTE::check_exec_line;
 
 fn main() {
     use std::fs::read_to_string;
-    let txt = if let Ok(bruh) = read_to_string("f5.inu") {
+    let txt = if let Ok(bruh) = read_to_string("calculator.inu") {
         bruh
     }
-    else {
+    else { 
         crate::SysThrow!("I can't find this fucking file!\n\tYOU HAD ONE JOB!")
     };     
 

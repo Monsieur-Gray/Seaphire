@@ -1,14 +1,8 @@
 _VARS: 2
-    int ?hi 0
-    int max 5
+    float a 10.2
+    int b 20
 EOS!
-
 _MAIN:
-    PRNT hi
-    MOV hi ADD hi 1
-    JUMPIF -2 [hi < 5]
-    JUMPIF +1 true
-
-    PRNT 'done'
-    PRNT 'boom'
+    MOV $1 ADD a b
+    PRNT_COOL $1
 _END:

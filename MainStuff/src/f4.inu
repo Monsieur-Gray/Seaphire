@@ -1,8 +1,9 @@
 _VARS: 2
-    int a 10
-    int b 20
+    str a 'hi'
+    str b 'bye'
 EOS!
+
 _MAIN:
-    PRNT [ [a!=b] && [a<b] ]
-    SINPUT 'adf'
+    PRNT 'shit'
+    IF [a == 'hi' || b == 'bye'] PRNT a
 _END:
