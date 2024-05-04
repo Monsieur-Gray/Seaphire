@@ -102,7 +102,7 @@ fn parse_dtype(p: Pair<Rule>) -> Option<Builtins> {
         Rule::INT =>    Some(  Builtins::D_type( D_type::int(pstr.parse::<i32>().unwrap()) )    ),
         Rule::FLOAT =>  Some(  Builtins::D_type( D_type::float(pstr.parse::<f32>().unwrap()) )  ),
         Rule::BOOL =>   Some(  Builtins::D_type( D_type::bool(pstr.parse::<bool>().unwrap()) )  ),
-        Rule::STRLIT => Some(  Builtins::D_type( D_type::str(pstr.to_string()) )    ),
+        Rule::STRLIT => Some(  Builtins::D_type( D_type::str(pstr.replace('\'', "").to_string()) )    ),
         Rule::REGISTER => Some(  Builtins::REGISTER(pstr.to_string()) ),
         Rule::ID =>     Some(  Builtins::ID    ( pstr.to_string() )   ),
         _ => None
@@ -118,7 +118,7 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>) -> 
     match line.as_rule() {
 
         Rule::math_expr  => {
-            let mut exp_vec = vec![];
+            let mut exp_vec: Vec<Builtins> = vec![];
 
             for expr_iter in line.clone().into_inner() {
                 match parse_dtype(expr_iter.clone()) {
@@ -132,10 +132,9 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>) -> 
 
 
         Rule::stdfn_expr => {
-            let mut exp_vec = vec![];
+            let mut exp_vec: Vec<Builtins> = vec![];
             
             for expr_iter in line.clone().into_inner() {
-                // println!("---> {:?}", &expr_iter);
                 match expr_iter.as_rule() {
                     Rule::Std_fn | Rule::logical_oper => exp_vec.push(  builtins_hash.get(expr_iter.as_str()).unwrap().to_owned() ),
 
@@ -155,7 +154,7 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>) -> 
             for expr_iter in line.clone().into_inner() {
                 match expr_iter.as_rule() {
                     Rule::MemInst => exp_vec.push(  builtins_hash.get(expr_iter.as_str()).unwrap().to_owned() ),
-                    Rule::math_expr => exp_vec.push( parse_exprs(&expr_iter, builtins_hash)[0].to_owned() ),
+                    Rule::math_expr | Rule::stdfn_expr => exp_vec.push( parse_exprs(&expr_iter, builtins_hash)[0].to_owned() ),
                     _ => exp_vec.push(  parse_dtype( expr_iter ).unwrap()  )
                 }
             };
@@ -164,7 +163,7 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>) -> 
 
         Rule::jump_expr => {
             let mut n = 0;
-            let mut cond = vec![];
+            let mut cond: Vec<Builtins> = vec![];
 
             for val in line.clone().into_inner() {
                 match val.as_rule() {
@@ -176,6 +175,17 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>) -> 
                 };
             };
             line_vec.push(Builtins::JUMPIF { n , expr: cond});
+        },
+
+        Rule::if_expr => {
+            let mut exp_vec = vec![];
+            for expr_iter in line.clone().into_inner() {
+                match expr_iter.as_rule() {
+                    Rule::BOOL | Rule::ID  =>  exp_vec.push(parse_dtype(expr_iter).unwrap()),
+                    Rule::logical_expr | _ => exp_vec.push( parse_exprs(&expr_iter, builtins_hash)[0].to_owned() ),
+                };
+            };
+            line_vec.push( Builtins::Expr { exp_type: ExpType::IF_EXP, expr: exp_vec } )
         },
 
 
@@ -193,7 +203,7 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>) -> 
         }
 
         Rule::condition => {
-            let mut exp_vec = vec![];
+            let mut exp_vec: Vec<Builtins> = vec![];
             for expr_iter in line.clone().into_inner() {
                 match expr_iter.as_rule() {
                     Rule::conditional_oper => exp_vec.push(  builtins_hash.get(expr_iter.as_str()).unwrap().to_owned() ),
@@ -201,7 +211,7 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>) -> 
                 }
             };
             line_vec.push(Builtins::Expr { exp_type: ExpType::CONDITION,  expr: exp_vec  });
-        } 
+        },
         
 
         Rule::ErrLine  => Throw!( format!("SyntaxError in the following expression -!> {:?}\n", line.as_str() ) ),

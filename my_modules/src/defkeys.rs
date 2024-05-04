@@ -37,7 +37,7 @@ pub enum CompOp {GREATER, LESS, EQUAL, UNEQUAL}       // Comparing (< > == !=)
 pub enum Logical_Op {AND, OR}       // Logical Operators (&& ||)
 
 #[derive(Debug, PartialEq, Clone)]          
-pub enum ExpType {MATH_EXP, STDFN_EXP, MEM_INST_EXP, CONDITION, LOGIC_EXP}       // Types of expression
+pub enum ExpType {MATH_EXP, STDFN_EXP, MEM_INST_EXP, CONDITION, LOGIC_EXP, IF_EXP}       // Types of expression
 
 
 //--------------------------------------------------------------------------------\\

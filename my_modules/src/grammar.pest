@@ -1,12 +1,13 @@
 ws = _{" "*}
 newln = _{("\r\n" | "\n") ~ ws}
-special_chars = _{"*"| "?"| "#"| "@"}
+special_chars = _{"*"| "?"| "#"| "@" }
+extra_special_chars = _{"-" | "+" | "*" | "/" | "=" | "_" | ":" |  "(" | ")"}
 char = _{ASCII_ALPHANUMERIC | special_chars }
 decimal = _{"."}
 
 INT = @{("-" | "+"){0,1} ~ ASCII_DIGIT+}
 FLOAT = @{ASCII_DIGIT+ ~ws~ decimal ~ws~ ASCII_DIGIT+}
-STRLIT = @{( "\'" ~ws~   (char | " "+)*   ~ws~ "\'" )}
+STRLIT = @{( "\'" ~ws~   (char | " " | special_chars | extra_special_chars )*   ~ws~ "\'" )}
 ID = @{"?"{0,1} ~ws~ char+}
 BOOL = @{("true" | "false")}
 REGISTER = @{"$" ~ ASCII_DIGIT}
@@ -35,9 +36,10 @@ condition = {D_TYPE ~ws~ conditional_oper ~ws~ D_TYPE }
 logical_expr = {"[" ~ws~ (condition | logical_expr) ~ws~ (ws~ logical_oper ~ws~ (condition | logical_expr)){0,1} ~ws~ "]" ~ws}
 
 jump_expr = {"JUMPIF" ~ws~ INT ~ws~ (BOOL | logical_expr) ~ws}
+if_expr = {"IF" ~ws~ (BOOL | ID | logical_expr) ~ws~ parent_expr ~ws}
 
-parent_expr = _{stdfn_expr | mem_inst_expr | math_expr | jump_expr | logical_expr | Comment | ErrLine}
+parent_expr = _{stdfn_expr | mem_inst_expr | math_expr | jump_expr | logical_expr  | if_expr | Comment | ErrLine}
 
-msec = {"_MAIN:" ~newln*~ (ws~ parent_expr ~ws~ newln*)* ~ "_END:"}
+msec = {"_MAIN:" ~newln*~ (ws~ parent_expr ~ws~ newln*)* ~ "_END:" ~ws~ newln*}
 
 file = { SOI ~ vsec ~newln*~ msec  ~ws~ EOI }
