@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-
 // use crate::Throw;
 
 #[derive(Debug, PartialEq, Clone)] 
@@ -15,9 +14,6 @@ pub enum Std_fns {PRNT_COOL, PRNT_PLAIN, SINPUT}     // Standard - Builtin funct
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Operation { ADD, SUB, MUL, DIV}       // Arithmetic operations
-
-#[derive(Debug, PartialEq, Clone)]
-pub enum Section {VARS, END, MAIN, EOS}        // Sections keywords
 
 #[derive(Debug, PartialEq, Clone)]          
 pub enum MemType {int, float, str, bool}    // Memory Types
@@ -37,17 +33,51 @@ pub enum CompOp {GREATER, LESS, EQUAL, UNEQUAL}       // Comparing (< > == !=)
 pub enum Logical_Op {AND, OR}       // Logical Operators (&& ||)
 
 #[derive(Debug, PartialEq, Clone)]          
-pub enum ExpType {MATH_EXP, STDFN_EXP, MEM_INST_EXP, CONDITION, LOGIC_EXP, IF_EXP}       // Types of expression
+pub enum ExpType {
+    MATH_EXP, STDFN_EXP, MEM_INST_EXP, 
+    CONDITION, LOGIC_EXP, 
+    ELSE_EXP, ELIF_EXP,
+    IF_EXP, IF_ELSE_EXP, IF_ELIF_EXP,
+    LOCAL_VAR_MAKE
+}       // Types of expression
 
 
+#[derive(Debug, PartialEq, Clone)]          
+pub enum Scope{
+    GlobalScope,
+    Local(u32)
+}
+
+impl Scope {
+    pub fn scope_to_u32(&self) -> u32 {
+        match self {
+            Self::GlobalScope => 0,
+            Self::Local(l) => *l
+        }
+    }
+}
+
+
+#[derive(Debug, PartialEq, Clone)]          
+pub struct Value {
+    pub value: Builtins, 
+    pub scope: Scope
+}
+
+//--------------------------------------------------------------------------------\\
 //--------------------------------------------------------------------------------\\
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Builtins {
+    InnerScope { 
+        inner_vsec: Option< Vec<Builtins> >,        // Not necessarily it will have some variables
+        block: Vec<Builtins>, 
+        scope: Scope
+    },
+
     D_type(D_type),
     Operation(Operation),
     Std_fns(Std_fns),
-    Section(Section),
     MemType(MemType),
     MemInst(MemInst),
     ID(String),
@@ -55,6 +85,7 @@ pub enum Builtins {
     Comment,
     CMP(CompOp),
     Logic(Logical_Op),
+
     Expr{
         exp_type: ExpType,
         expr: Vec<Builtins>
@@ -85,11 +116,23 @@ impl PartialOrd for Builtins {
 
 impl Builtins {
 
-    pub fn unwrap_expr_vec(&self) -> Result<&Vec<Builtins>, String>{
+    pub fn to_value(&self, scope: Scope) -> Value {
+        match self {
+            Builtins::D_type(_) => Value{ value: self.clone(), scope },
+            _ => crate::Throw!( format!("The following type -> '{:?}' cannot be interpreted as a ValueType", &self))
+        }
+    }
+
+    pub fn unwrap_expr_vec(&self) -> Result< &Vec<Builtins>, String >{
         match self {
             Builtins::Expr { exp_type: _, expr } => {
                 return Ok(expr);
             },
+
+            Builtins::InnerScope { inner_vsec: _, block, scope: _ } => {
+                return Ok(block);
+            },
+
             other => Err(format!("Not an expression! -> {:?}", other))
         }
     }
@@ -100,6 +143,16 @@ impl Builtins {
                 return Ok(exp_type);
             },
             other => Err(format!("Not an expression! -> {:?}", other))
+        }
+    }
+
+    pub fn get_data_type(&self) -> String {
+        match self {
+            Builtins::D_type( D_type::int(_) ) => "INT".to_string(),
+            Builtins::D_type( D_type::float(_) ) => "FLOAT".to_string(),
+            Builtins::D_type( D_type::str(_) ) => "STR".to_string(),
+            Builtins::D_type( D_type::bool(_) ) => "BOOL".to_string(),
+            _ => "NaN".to_string()
         }
     }
 
@@ -114,11 +167,6 @@ impl Builtins {
         ( "PRNT_COOL".to_string(), Builtins::Std_fns(Std_fns::PRNT_COOL) ), 
         ( "SINPUT".to_string(), Builtins::Std_fns(Std_fns::SINPUT) ), 
                        
-        ( "_VARS:".to_string(), Builtins::Section(Section::VARS) ),     // Section
-        ( "_END:".to_string(), Builtins::Section(Section::END) ),
-        ( "_MAIN:".to_string(), Builtins::Section(Section::MAIN) ),
-        ( "EOS!".to_string(), Builtins::Section(Section::EOS) ),
-
         ("int".to_string(), Builtins::MemType(MemType::int)),           // MemType
         ("float".to_string(), Builtins::MemType(MemType::float)),
         ("str".to_string(), Builtins::MemType(MemType::str)),
