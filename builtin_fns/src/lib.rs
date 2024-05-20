@@ -3,10 +3,7 @@
 extern crate colored;
 
 pub mod ARITHMETIC;
-pub mod fetch_data;
 pub mod PRNT;
-// pub mod EXECUTE;
-// pub mod EXECUTE;
 pub mod EXECUTE;
 pub mod Compare;
 pub mod Input;

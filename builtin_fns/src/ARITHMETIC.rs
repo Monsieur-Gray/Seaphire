@@ -2,17 +2,20 @@ use std::collections::HashMap;
 
 use my_modules::defkeys::*;
 
-use crate::fetch_data::{fetch_num, get_val};
+use my_modules::fetch_data::{fetch_num, get_val};
 use crate::Throw;
 
 fn seaphire_add(operands: &Vec<Builtins>,
-    stack_hash: &HashMap<String, Builtins>,
-    heap_hash: &HashMap<String, Builtins>,
-    reg_hash: &HashMap<String, Builtins>
+    stack_hash: &HashMap<String, Value>,
+    heap_hash: &HashMap<String, Value>,
+    reg_hash: &HashMap<String, Value>
 ) -> f32 {
     let answer: f32 = operands.iter().map(|i| {
         match get_val(i, stack_hash, heap_hash, reg_hash) {
-            Some(v) => fetch_num(&v).unwrap(),
+            Some(v) => match fetch_num(&v)  {
+                Ok(v) => v,
+                Err(_) => 0.0
+            },
             None => Throw!(format!("ADD_2 isnt made for {:?}", i))
         }
     }).sum();
@@ -21,9 +24,9 @@ fn seaphire_add(operands: &Vec<Builtins>,
 }
 
 fn seaphire_sub(operands: &Vec<Builtins>,               //SUBTRACTION
-    stack_hash: &HashMap<String, Builtins>,
-    heap_hash: &HashMap<String, Builtins>,
-    reg_hash: &HashMap<String, Builtins>
+    stack_hash: &HashMap<String, Value>,
+    heap_hash: &HashMap<String, Value>,
+    reg_hash: &HashMap<String, Value>
 ) -> f32 {
     
     let mut answer: f32 = match get_val(&operands[0], stack_hash, heap_hash, reg_hash) {
@@ -32,8 +35,12 @@ fn seaphire_sub(operands: &Vec<Builtins>,               //SUBTRACTION
     };    // For the offset!
 
     operands.iter().skip(1).for_each(|i| {
-        let num: f32 = match get_val(i, stack_hash, heap_hash, reg_hash) {
-            Some(v) => fetch_num(&v).unwrap(),
+        let num = match get_val(i, stack_hash, heap_hash, reg_hash) 
+            {
+                Some(v) => match fetch_num(&v)  {
+                    Ok(v) => v,
+                    Err(_) => 0.0
+            },
             None => Throw!(format!("SUB_2 isnt made for {:?}", i))
         };
         answer -= num;
@@ -43,44 +50,51 @@ fn seaphire_sub(operands: &Vec<Builtins>,               //SUBTRACTION
 }
 
 fn seaphire_mul(operands: &Vec<Builtins>,
-    stack_hash: &HashMap<String, Builtins>,
-    heap_hash: &HashMap<String, Builtins>,
-    reg_hash: &HashMap<String, Builtins>
-) -> f32 {
-
+    stack_hash: &HashMap<String, Value>,
+    heap_hash: &HashMap<String, Value>,
+    reg_hash: &HashMap<String, Value>
+) -> f32
+{
     let mut answer: f32 = 1.0;
     operands.iter().for_each(|i| {
-        let num = match get_val(i, stack_hash, heap_hash, reg_hash) {
-            Some(v) => fetch_num(&v).unwrap(),
+        let num = match get_val(i, stack_hash, heap_hash, reg_hash) 
+        {
+            Some(v) => match fetch_num(&v)  {
+                Ok(v) => v,
+                Err(_) => 1.0
+        },
             None => Throw!(format!("MUL_2 isnt made for {:?}", i))
         };
         answer *= num;
     });
-
     return answer;
 }
 
 fn seaphire_div(operands: &Vec<Builtins>,   
-    stack_hash: &HashMap<String, Builtins>,
-    heap_hash: &HashMap<String, Builtins>,
-    reg_hash: &HashMap<String, Builtins>
-) -> f32 {
-
+    stack_hash: &HashMap<String, Value>,
+    heap_hash: &HashMap<String, Value>,
+    reg_hash: &HashMap<String, Value>
+) -> f32 
+{
     let mut answer: f32 = match get_val(&operands[0], stack_hash, heap_hash, reg_hash) {
         Some(v) => fetch_num(&v).unwrap(),
         None => Throw!(format!("DIV_2 isnt made for {:?}", &operands[0]))
     }.powi(2);      // For the offset!
 
     operands.iter().for_each(|i| {
-        let num = match get_val(i, stack_hash, heap_hash, reg_hash) {
-            Some(v) => fetch_num(&v).unwrap(),
+        let num = match get_val(i, stack_hash, heap_hash, reg_hash) 
+        {
+            Some(v) => match fetch_num(&v)  {
+                Ok(v) => {
+                    if v == 0.0 {
+                        Throw!("Who in the actual fuck divides by 0? LIKE WHO IN THEIR RIGHT BLOODY MIND DIVIDES BY 0");
+                    } else { v }
+                },
+                Err(_) => 1.0
+        },
             None => Throw!(format!("DIV_2 isnt made for {:?}", i))
         };
-        if num != 0.0 {
-            answer /= num;
-        } else {
-            Throw!("Who in the actual fuck divides by 0? LIKE WHO IN THEIR RIGHT BLOODY MIND DIVIDES BY 0");
-        }
+        answer /= num;
     });
             
     return answer;
@@ -90,9 +104,9 @@ fn seaphire_div(operands: &Vec<Builtins>,
 //-------------------------------------------------------------------------------------------------------------------------------------
 
 pub fn perf_math(line: &Vec<Builtins>, 
-    stack_hash: &HashMap<String, Builtins>,
-    heap_hash: &HashMap<String, Builtins>,
-    reg_hash: &HashMap<String, Builtins>,
+    stack_hash: &HashMap<String, Value>,
+    heap_hash: &HashMap<String, Value>,
+    reg_hash: &HashMap<String, Value>,
     should_print: bool
 ) -> f32 {
     use colored::*;

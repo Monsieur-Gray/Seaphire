@@ -1,16 +1,16 @@
 use colored::Colorize;
 use my_modules::defkeys::*;
 
-use crate::fetch_data::{fetch_bool, fetch_num, fetch_str};
+use my_modules::fetch_data::{fetch_bool, fetch_num, fetch_str};
 use crate::Compare;
 
 use std::collections::HashMap;
 
 pub fn print_line(
     line: &Vec<Builtins>,
-    stack_hash: &HashMap<String, Builtins>,
-    heap_hash: &HashMap<String, Builtins>,
-    reg_hash: &HashMap<String, Builtins>,
+    stack_hash: &HashMap<String, Value>,
+    heap_hash: &HashMap<String, Value>,
+    reg_hash: &HashMap<String, Value>,
     isCool: bool
 )  {
     match &line[1] {
@@ -65,13 +65,13 @@ pub fn print_line(
 }
 
 
-fn print_var(var_nam: String, mem_hash: &HashMap<String, Builtins>, isCool: &bool) {
+fn print_var(var_nam: String, mem_hash: &HashMap<String, Value>, isCool: &bool) {
     let dat = match mem_hash.get(&var_nam) {
         Some(stuff) => stuff,
         None => crate::Throw!(format!("No variable named {:?}", var_nam)),
     };
 
-    if let Ok(dat) = fetch_num(dat) {
+    if let Ok(dat) = fetch_num(&dat.value) {
         if *isCool {
             println!("{:?} contains {}", var_nam, dat.to_string().green().bold());
         }
@@ -79,7 +79,7 @@ fn print_var(var_nam: String, mem_hash: &HashMap<String, Builtins>, isCool: &boo
             println!(":> {}", dat.to_string().truecolor(150, 150, 100).bold());
         }
     } 
-    else if let Ok(dat) = fetch_str(dat) {
+    else if let Ok(dat) = fetch_str(&dat.value) {
         if *isCool {
             println!("{:?} contains {}", var_nam, dat.to_string().green().bold());
         }
@@ -89,10 +89,12 @@ fn print_var(var_nam: String, mem_hash: &HashMap<String, Builtins>, isCool: &boo
     } 
     else {
         if *isCool {
-            println!("{:?} contains {}", var_nam, fetch_bool(dat).unwrap().to_string().green().bold());
+            println!("{:?} contains {}", var_nam, fetch_bool(&dat.value).unwrap()
+                .to_string().green().bold());
         }
         else {
-            println!(":> {}", fetch_bool(dat).unwrap().to_string().truecolor(150, 150, 100).bold());
+            println!(":> {}", fetch_bool(&dat.value).unwrap()
+                .to_string().truecolor(150, 150, 100).bold());
         }
     };
 }

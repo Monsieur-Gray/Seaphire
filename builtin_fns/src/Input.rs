@@ -17,7 +17,7 @@ pub fn get_parsed_inp(exp_line: &Vec<Builtins>) -> Builtins {
         .expect("Unable to get prompt");
     let inp = inp.trim();
 
-    match inp.parse::<bool>() {
+    let outp = match inp.parse::<bool>() {
         Ok(b) => Builtins::D_type(D_type::bool(b)),
 
         Err(_) => match inp.parse::<i32>() {
@@ -28,5 +28,8 @@ pub fn get_parsed_inp(exp_line: &Vec<Builtins>) -> Builtins {
                 Err(_) => Builtins::D_type(D_type::str(inp.to_string()))
             }
         }
-    } 
+    };
+
+    return outp;
+
 }
