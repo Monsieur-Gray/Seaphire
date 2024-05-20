@@ -1,0 +1,27 @@
+_VARS: 2
+    str a 'hi'
+    bool ?isTrue true
+EOS!
+
+_MAIN:
+    PRNT a
+    {
+        @int ?shit 10
+        @int anothershit 20
+        ADD shit anothershit
+
+        {
+            @str poo 'hitler'
+            SUB 15 44
+            PRNT 'nigga what'
+            JUMPIF -3 true
+
+            {
+                MOV shit 30
+                MUL shit anothershit
+            } 
+        }
+    }
+
+    PRNT 'EXITED GRACEFULLY' 
+_END:

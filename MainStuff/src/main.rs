@@ -1,6 +1,8 @@
 #![allow(non_snake_case)]
-// #![allow(unused)]
+#![allow(unused)]
 
+use colored::Colorize;
+use my_modules::defkeys::Builtins;
 use my_modules::*;
 use my_modules::PARSER::pest_parse;
 
@@ -9,7 +11,8 @@ use builtin_fns::EXECUTE::check_exec_line;
 
 fn main() {
     use std::fs::read_to_string;
-    let txt = if let Ok(bruh) = read_to_string("calculator.inu") {
+    let file_name = "f5scopes.inu";
+    let txt = if let Ok(bruh) = read_to_string(&file_name) {
         bruh
     }
     else { 
@@ -23,11 +26,20 @@ fn main() {
     // };
 
     let MSEC = PARSER::make_msec(mvec);
-    // for i in &MSEC {
+    // for i in MSEC {
     //     println!("---> {:?}\n", i);
-    // };
+    //     match i {
+    //         Builtins::InnerScope { inner_vsec, block, scope } => {
+    //             println!(" BLOCK :->>> {:?}\n", block);
+    //             println!(" \tscope :->>> {:?}\n", scope);
+    //         },
+    //         _ => continue
+    //     }
+    // }
 
     let [sh, hh, regh] = PARSER::calloc(vvec);
+
+    println!("~~~~~~~\tCURRENTLY RUNNING ->  {}~~~~~~~\n", file_name.purple().bold());
     check_exec_line(&MSEC, sh, hh, regh);
 }
 

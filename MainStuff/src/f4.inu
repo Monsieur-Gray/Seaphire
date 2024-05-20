@@ -1,9 +1,12 @@
-_VARS: 2
-    str a 'hi'
-    str b 'bye'
+_VARS: 1
+    str ?a ''
 EOS!
 
 _MAIN:
-    PRNT 'shit'
-    IF [a == 'hi' || b == 'bye'] PRNT a
+    MOV a SINPUT 'Enter something'
+
+    IF [a=='hi'] PRNT 'You said hi'
+    ELIF [a=='hey'] PRNT 'You said hey'
+    ELIF [a=='bye'] PRNT 'You said bye'
+    ELSE PRNT 'say something nice'
 _END:

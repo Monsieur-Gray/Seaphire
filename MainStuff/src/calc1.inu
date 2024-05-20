@@ -1,0 +1,14 @@
+_VARS: 1
+    int boo 123
+EOS!
+
+_MAIN:
+    MOV $1 SINPUT 'Enter a:- '
+    MOV $2 SINPUT 'Enter b:- '
+    MOV $3 SINPUT 'Enter operation:- (+ - * /)'
+
+    IF [$3 == '+'] PRNT ADD $1 $2
+    IF [$3 == '-'] PRNT SUB $1 $2
+    IF [$3 == '*'] PRNT MUL $1 $2
+    IF [$3 == '/'] PRNT DIV $1 $2
+_END:  

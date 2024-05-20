@@ -8,5 +8,4 @@ _MAIN:
     PRNT ADD Age 1
     MOV $1 ADD 10 100
     PRNT_COOL $1
-
 _END:
