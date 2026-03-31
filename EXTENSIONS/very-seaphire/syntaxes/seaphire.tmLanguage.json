@@ -1,0 +1,77 @@
+{
+	"name": "Seaphire",
+	"patterns": [
+		{
+			"include": "#sections"
+		},
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#arithmetic_operator"
+		},
+		{
+			"include": "#mem_inst"
+		},
+		{
+			"include": "#std_fns"
+		},
+		{
+			"include": "#mem_type"
+		},
+		{
+			"include": "#strings"
+		}
+		
+	],
+	"repository": {
+		"strings": {
+			"name": "string.quoted.double.seaphire",
+			"begin": "'",
+			"end": "'",
+			"patterns": [
+				{
+					"name": "constant.character.escape.seaphire",
+					"match": "\\\\."
+				}
+			]
+		},
+		"mem_type": {
+			"patterns": [{
+				"name": "d_type.mem_type.seaphire",
+				"match": "\\b(int|float|str|bool)\\b"
+			}]
+		},
+		"mem_inst": {
+			"patterns": [{
+				"name": "mem_inst.seaphire",
+				"match": "\\b(MOV|DEL)\\b"
+			}]
+		},
+		"arithmetic_operator": {
+			"patterns": [{
+				"name": "arithmetic_operator.seaphire",
+				"match": "\\b(ADD|SUB|MUL|DIV)\\b"
+			}]
+		},
+		"std_fns": {
+			"patterns": [{
+				"name": "std_fns.seaphire",
+				"match": "\\b(PRINT)\\b"
+			}]
+		},
+		"sections": {
+			"patterns": [{
+				"name": "sections.seaphire",
+				"match": "\\b(_VARS|_MAIN|EOS|_END)\\b"
+			}]
+		},
+		"comments": {
+			"name": "comment.single-line.seaphire",
+			"begin": "crap->",
+			"end": "\n"
+
+		}
+	},
+	"scopeName": "source.seaphire"
+}

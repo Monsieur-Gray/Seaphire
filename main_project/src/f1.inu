@@ -1,0 +1,11 @@
+_VARS: 2
+    float Age 69.420
+    str name "Inu"
+EOS!
+
+_MAIN:
+    ADD 23 5
+    ADD Age 1
+    MOV $1 ADD 10 100
+    PRINT_COOL $1
+_END:  

@@ -1,0 +1,9 @@
+_VARS: 1
+    str a "bye"
+EOS!
+
+_MAIN:
+    PRINT "NIGGER"
+    IF [a == "hi"] PRINT "You said hi"
+    ELSE PRINT "Nay nigga"
+_END:

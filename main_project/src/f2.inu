@@ -1,0 +1,15 @@
+_VARS: 2
+    int ?num 0
+    int max 5
+EOS!
+
+_MAIN:
+    PRINT num
+    MOV num ADD num 1
+    JUMPIF -2 [num <= 5]
+
+    JUMPIF +1 true
+
+    PRINT "done"
+    PRINT "boom"
+_END:

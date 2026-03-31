@@ -1,0 +1,13 @@
+_VARS: 2
+    str a "Hello World"
+    int ?b 69
+EOS!
+
+_MAIN:
+    PRINT a
+    ADD b 20 1
+    
+    MOV b 33
+    MOV $1 100
+    PRINT b
+_END:

@@ -1,0 +1,6 @@
+Execute, Compiler, Input, Prnt are all in core_utils just to reduce compilation time
+during development.
+
+They are meant to be in Pipeline, and stdlib respectively.
+
+Thank you
