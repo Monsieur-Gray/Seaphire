@@ -9,7 +9,9 @@ use core_utils::EXECUTE::check_exec_line;
 
 fn main() {
     use std::fs::read_to_string;
-    let file_name = "src/f2.inu";
+
+    // ENTER YOUR FILE NAME HERE ->
+    let file_name = "src/debug.inu";
     let txt = if let Ok(bruh) = read_to_string(&file_name) {
         bruh
     } else {

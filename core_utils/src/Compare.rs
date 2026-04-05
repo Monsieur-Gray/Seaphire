@@ -89,7 +89,7 @@ fn make_tree(
                 match &ex_vec[1] {
                     Builtins::Logic(Logical_Op::OR) => eval_a || eval_b,
                     Builtins::Logic(Logical_Op::AND) => eval_a && eval_b,
-                    _ => Throw!("Compare::maketree:: shit thorw"),
+                    _ => Throw!("Compare::maketree:: shit throw"),
                 }
             }
 

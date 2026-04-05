@@ -11,14 +11,14 @@ _MAIN:
     MOV oper SINPUT "Enter operation:- (+ - * /)"
 
 crap-> So apparantly the entire If-elif-else block is considered one entire line
-    IF [oper == "+"] PRINT ADD a b
-        ELIF [oper == "-"] PRINT SUB a b
-        ELIF [oper == "*"] PRINT MUL a b
-        ELIF [oper == "/"] PRINT DIV a b
+    IF [oper == "+"]  ADD a b
+        ELIF [oper == "-"] SUB a b
+        ELIF [oper == "*"] MUL a b
+        ELIF [oper == "/"] DIV a b
     ELSE PRINT "Please select a valid operation"
 
-    MOV retry SINPUT "Do you want to do it again? (yes/no)"
-    JUMPIF -5 [retry=="yes"]
+    MOV retry SINPUT "Do you want to do it again? (yes / no)"
+    JUMPIF -6 [retry=="yes"]
     
     IF [retry != "no"] PRINT "You couldve said no "
 _END:

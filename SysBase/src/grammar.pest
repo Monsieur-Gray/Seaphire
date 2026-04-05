@@ -3,7 +3,7 @@ optional_ws = _{" "*}
 newln = _{("\r\n" | "\n") ~ optional_ws}
 special_chars = _{"_"}
 escape_chars = _{"\t" | "\n"}
-extra_special_chars = _{ "-" | "+" | "/" | "\\" | "=" | ":" |  "(" | ")" | "," | "@"}
+extra_special_chars = _{"," | "-" | "+" | "/" | "*" | "\\" | "=" | ":" |  "(" | ")" | "@" | "?"}
 char = _{ASCII_ALPHANUMERIC | special_chars }
 
 INT = @{("-" | "+"){0,1} ~ ASCII_DIGIT+}
@@ -49,11 +49,11 @@ if_elif_expr = {if_expr ~ (newln*~optional_ws~ elif_expr)+ ~newln*~optional_ws~ 
 
 parent_expr = _{ stdfn_expr | mem_inst_expr | math_expr | jumpif_expr | if_elif_expr | if_else_expr | if_expr | Comment }
 
-inner_vsec = { (ws~ local_var_make ~optional_ws~ newln*)* }
-inner_msec = { (ws~ (parent_expr | InnerScope) ~optional_ws~ newln*)+ }
+inner_vsec = { (optional_ws~ local_var_make ~optional_ws~ newln*)* }
+inner_msec = { (optional_ws~ (parent_expr | InnerScope) ~optional_ws~ newln*)+ }
 
-InnerScope = { "{" ~newln*~ inner_vsec ~optional_ws~ inner_msec ~optional_ws~ "}" ~optional_ws}
+InnerScope = { "{" ~ optional_ws~newln*~ inner_vsec ~optional_ws~ inner_msec ~optional_ws~ "}" ~optional_ws}
 
-msec = {"_MAIN:" ~newln*~ (optional_ws~ (parent_expr | InnerScope) ~optional_ws~newln*)* ~optional_ws~ "_END:" ~optional_ws}
+msec = {"_MAIN:" ~optional_ws~newln*~ (optional_ws~ (parent_expr | InnerScope) ~optional_ws~newln*)* ~optional_ws~ "_END:" ~optional_ws}
 
 file = { SOI ~ vsec ~newln*~ msec ~newln*~ EOI }

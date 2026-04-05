@@ -9,12 +9,13 @@ _MAIN:
     {
         @int ?shit 10
         @int anothershit 20
+        
         ADD shit anothershit
 
         {
             @str poo "hitler"
             SUB 15 44
-            PRINT "nigga what"
+            PRINT "Bro what"
             JUMPIF -3 true
 
             {

@@ -174,7 +174,7 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>, sco
             let mut exp_vec: Vec<Builtins> = vec![];
 
             for expr_iter in line.clone().into_inner() {
-                // println!("fucking nigger => {:?}", expr_iter);
+                // println!("fucking bullshit => {:?}", expr_iter);
                 match expr_iter.as_rule() {
                     Rule::MemInst => exp_vec.push(  builtins_hash.get(expr_iter.as_str()).unwrap().to_owned() ),
 
