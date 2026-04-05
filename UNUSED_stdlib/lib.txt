@@ -1,0 +1,25 @@
+#![allow(non_snake_case)]
+
+pub mod Input;
+pub mod PRINT;
+
+#[macro_export]
+macro_rules! Throw {
+    ($msg:literal) => {{        // &str
+        use colored::*;
+        panic!(
+            "{}", format!("->!> {}", $msg)
+            .red().bold()
+            .on_truecolor(15, 15, 15)
+        )
+    }};
+
+    ($msg:expr) => {{          // String
+        use colored::*;
+        panic!(
+            "{}", format!("->!> {}", $msg)
+            .red().bold()
+            .on_truecolor(15, 15, 15)
+        )
+    }};
+}

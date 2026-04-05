@@ -1,0 +1,59 @@
+ws = _{" "+}
+optional_ws = _{" "*}
+newln = _{("\r\n" | "\n") ~ optional_ws}
+special_chars = _{"_"}
+escape_chars = _{"\t" | "\n"}
+extra_special_chars = _{"," | "-" | "+" | "/" | "*" | "\\" | "=" | ":" |  "(" | ")" | "@" | "?"}
+char = _{ASCII_ALPHANUMERIC | special_chars }
+
+INT = @{("-" | "+"){0,1} ~ ASCII_DIGIT+}
+FLOAT = @{ASCII_DIGIT+ ~ "." ~ ASCII_DIGIT+}
+STRLIT = @{( "\"" ~optional_ws~  (char | " " | extra_special_chars | escape_chars)* ~optional_ws~ "\"" )}
+ID = @{"?"{0,1} ~optional_ws~ char+}
+BOOL = @{("true" | "false")}
+REGISTER = @{"$" ~ ASCII_DIGIT}
+D_TYPE = _{ BOOL | REGISTER | FLOAT | INT | STRLIT | ID  }
+
+Std_fn = {"PRINT_COOL" | "PRINT" | "SINPUT" }
+Operations = { "ADD" | "SUB" | "MUL" | "DIV" }
+MemType = { "int" | "float" | "str" | "bool" }
+MemInst = {"MOV" | "DEL"}
+Comment = {"crap->" ~optional_ws~ (char | " " | extra_special_chars)* }
+conditional_oper = {"==" | "!=" | ">=" | "<=" | ">" | "<" }
+logical_oper = {"&&" | "||" }
+
+
+var_make = { optional_ws ~ MemType ~ws~ ID ~ws~ (D_TYPE) ~optional_ws}
+local_var_make = { "@" ~ MemType ~ws~ ID ~ws~ D_TYPE ~optional_ws}
+
+vsec = {"_VARS:" ~ws~ INT ~ optional_ws ~newln* ~ (var_make ~ newln*)* ~ "EOS!"}
+
+
+math_expr = {Operations ~ (ws~ (INT | FLOAT | REGISTER | ID) )+ ~optional_ws}
+stdfn_expr = {Std_fn ~ (ws~ (math_expr | logical_expr | D_TYPE ) )+ ~optional_ws}
+mem_inst_expr = {MemInst ~ws~ (ID | REGISTER) ~ws~ (math_expr | condition | logical_expr | stdfn_expr | D_TYPE) ~optional_ws}
+
+
+condition = {"[" ~optional_ws~ D_TYPE ~optional_ws~ conditional_oper ~optional_ws~ D_TYPE ~optional_ws~ "]"}
+logical_expr = {"[" ~optional_ws~ (condition | logical_expr) ~optional_ws~ logical_oper ~optional_ws~ (condition | logical_expr) ~optional_ws~ "]" ~optional_ws}
+
+jumpif_expr = {"JUMPIF" ~ws~ INT ~ws~ (BOOL | condition | logical_expr) ~optional_ws}
+
+if_expr = {"IF" ~ws~ (BOOL | condition | logical_expr | ID) ~ws~ parent_expr ~optional_ws}
+elif_expr = {"ELIF" ~ws~ (BOOL | condition | logical_expr | ID) ~ws~ parent_expr ~optional_ws}
+else_expr = {"ELSE" ~ws~ parent_expr ~optional_ws}
+
+if_else_expr = {if_expr  ~newln*~optional_ws~ else_expr}
+if_elif_expr = {if_expr ~ (newln*~optional_ws~ elif_expr)+ ~newln*~optional_ws~ else_expr }
+
+
+parent_expr = _{ stdfn_expr | mem_inst_expr | math_expr | jumpif_expr | if_elif_expr | if_else_expr | if_expr | Comment }
+
+inner_vsec = { (ws~ local_var_make ~optional_ws~ newln*)* }
+inner_msec = { (ws~ (parent_expr | InnerScope) ~optional_ws~ newln*)+ }
+
+InnerScope = { "{" ~ optional_ws~newln*~ inner_vsec ~optional_ws~ inner_msec ~optional_ws~ "}" ~optional_ws}
+
+msec = {"_MAIN:" ~optional_ws~newln*~ (optional_ws~ (parent_expr | InnerScope) ~optional_ws~newln*)* ~optional_ws~ "_END:" ~optional_ws}
+
+file = { SOI ~ vsec ~newln*~ msec ~newln*~ EOI }

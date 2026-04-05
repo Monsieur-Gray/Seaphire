@@ -1,0 +1,13 @@
+_VARS: 0
+EOS!
+
+_MAIN:
+    MOV $1 SINPUT "Enter a:- "
+    MOV $2 SINPUT "Enter b:- "
+    MOV $3 SINPUT "Enter operation:- (+ - * /)"
+
+    IF [$3 == "+"] ADD $1 $2
+    IF [$3 == "-"] SUB $1 $2
+    IF [$3 == "*"] MUL $1 $2
+    IF [$3 == "/"] DIV $1 $2
+_END:  

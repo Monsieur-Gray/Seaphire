@@ -1,0 +1,25 @@
+	{
+  "name": "seaphire",
+  "displayName": "Seaphire",
+  "description": "This is Syntax Highlighting for my language seaphire",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.54.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "Seaphire",
+      "aliases": ["Seaphire", "seaphire"],
+      "extensions": [".inu"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "Seaphire",
+      "scopeName": "source.seaphire",
+      "path": "./syntaxes/seaphire.tmLanguage.json"
+    }]
+  }
+}

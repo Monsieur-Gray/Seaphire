@@ -1,0 +1,9 @@
+[package]
+name = "core_utils"
+version = "0.1.0"
+edition = "2021"
+
+ 
+[dependencies]
+colored = "3.1.1"
+SysBase =  {path = "../SysBase"}

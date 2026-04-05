@@ -1,0 +1,13 @@
+[package]
+name = "main_project"
+version = "0.1.0"
+edition = "2021"
+
+ 
+[dependencies]
+SysBase =  {path = "../SysBase"}
+core_utils =  {path = "../core_utils"}
+
+colored = "3.1.1"
+pest = "2.8.6"
+pest_derive = "2.8.6"

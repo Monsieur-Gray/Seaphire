@@ -1,9 +1,0 @@
-_VARS: 2
-    str a 'hi'
-    str b 'bye'
-EOS!
-
-_MAIN:
-    PRNT 'shit'
-    IF [a == 'hi' || b == 'bye'] PRNT a
-_END:

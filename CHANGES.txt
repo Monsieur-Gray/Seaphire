@@ -1,0 +1,32 @@
+---- 26/02/25 ----
+ ~ You cannot use MOV <var> [logical/conditional] , use your own brain for that. Might add in teh fututre, but not now.
+
+OBJECTIVE-1 26/02/25 (FIXED)
+  Fix issue regarding 'Parsing of conditional and logical expressions'
+  [[a] && [b]]--> expected ==> LOGICAL { CONDITIONAL: [a], AND, CONDITIONAL: [b] }
+                  actual ==>   LOGICAL { LOGICAL {CONDITIONAL: [a]}, AND , LOGICAL {CONDITIONAL:[b]}}
+
+  i.e. we are getting improper parsing.
+  Similar happens to singular conditions too.
+  eg:- [X] -> expected => Conditional.
+
+  NOTE:- Where are logical/condtional used in Seaphire?
+	  ~If-elif-else, Jumpif. All can directly parse conditions.
+
+
+---- 7/8/25  ----
+  1.(12:27AM){change}> Changing 'PRINT' to 'PRINT' cos I fucking feel like it duh
+		 12:29am, deed has been done.
+
+  2.(12:27AM){future, game_changing}> Update ARITHMETIC such that operations can be performed on same datatypes only !
+
+  3.(12:27AM){implementation, solved}> Added the <= & >= comparators
+
+  4.(6:12PM){bug} Big fucking error when parsing statement like IF [a="hi"] PRINT "fuck off".
+    Error stems from Execute.rs and Compare.rs.
+    Issue :- Line must be `match if_exp[0].get_expression_type()` on line 115 and next lines in CONDITIONAL handling, in execute.rs only
+
+
+---- 31/3/26 03:14pm Tue (pi)  ----
+  I finally have my own desktop now. My HP Victus 15 laptop. Thank you dada <3.
+  Lets start working again !

@@ -1,0 +1,31 @@
+{
+	"name": "seaphire_tokyo-theme",
+	"displayName": "Seaphire_Tokyo-theme",
+	"publisher": "Mon-Gray",
+	"description": "The original theme is made , I've just modified it for my language :)",
+	"version": "0.0.6",
+	"engines": {
+		"vscode": "^0.0.1"
+	},
+	"categories": [
+		"Themes"
+	],
+	"contributes": {
+		"themes": [
+			{
+				"label": "SeaphireTokyo Theme",
+				"uiTheme": "vs-dark",
+				"path": "./themes/Seaphire-Tokyo-theme.json"
+			}
+		]
+	},
+	"galleryBanner": {
+		"color": "#161620",
+		"theme": "dark"
+	},
+	"keywords": [
+		"theme",
+		"tokyo theme",
+		"modified theme"
+	]
+}
