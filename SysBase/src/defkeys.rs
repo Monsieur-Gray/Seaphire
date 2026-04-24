@@ -10,7 +10,7 @@ pub enum D_type {
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub enum Std_fns {PRINT_COOL, PRINT_PLAIN, SINPUT}     // Standard - Builtin functions
+pub enum Std_fns {PRINT_COOL, PRINT, PRINT_NEWLINE, SINPUT}     // Standard - Builtin functions
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Operation { ADD, SUB, MUL, DIV}       // Arithmetic operations
@@ -22,28 +22,41 @@ pub enum MemType {int, float, str, bool, NaN}    // Memory Types
 pub enum ID{ id(String) }               // For Variables or other data_types
 
 #[derive(Debug, PartialEq, Clone)]          
-pub struct  JUMPIF {pub n: i32}
-
-#[derive(Debug, PartialEq, Clone)]          
 pub enum MemInst {MOV, DEL}       // Memory Instruction CALLED IN MAINSEC
 
 #[derive(Debug, PartialEq, Clone)]          
 pub enum CompOp {GREATER, LESS, EQUAL, UNEQUAL, GREATER_EQ, LESS_EQ}       // Comparing (< > == !=)
+
 #[derive(Debug, PartialEq, Clone)]          
 pub enum Logical_Op {AND, OR}       // Logical Operators (&& ||)
+
+#[derive(Debug, PartialEq, Clone)]          
+pub enum Loop {WHILE_LOOP(WHILE_LOOP) , FOR_LOOP}
+
+
+#[derive(Debug, PartialEq, Clone)]          
+pub struct WHILE_LOOP {
+    pub condition: Vec<Builtins>,
+    pub block: InnerScope
+}
+
 
 #[derive(Debug, PartialEq, Clone)]          
 pub enum ExpType {
     MATH_EXP, STDFN_EXP, MEM_INST_EXP, 
     CONDITION, LOGIC_EXP, 
+
     ELSE_EXP, ELIF_EXP,
     IF_EXP, IF_ELSE_EXP, IF_ELIF_EXP,
+
+    WHILE_EXP,
+
     LOCAL_VAR_MAKE
 }       // Types of expression
 
 
 #[derive(Debug, PartialEq, Clone)]          
-pub enum Scope{
+pub enum Scope{ 
     GlobalScope,
     Local(u32)
 }
@@ -63,16 +76,28 @@ pub struct Value {
     pub scope: Scope
 }
 
+
+#[derive(Debug, PartialEq, Clone)]          
+pub struct InnerScope { 
+    pub inner_vsec: Option< Vec<Builtins> >,        // Not necessarily it will have some variables
+    pub block: Vec<Builtins>,       // block is a collection of expressions (each will be of type Builtins::Expr)
+    pub scope: Scope
+}
+
+/* 
+#[derive(Debug, PartialEq, Clone)]          
+pub struct Expr {
+    pub exp_type: ExpType,
+    pub expr: Vec<Builtins>
+
+} */
+
 //--------------------------------------------------------------------------------\\
 //--------------------------------------------------------------------------------\\
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Builtins {
-    InnerScope { 
-        inner_vsec: Option< Vec<Builtins> >,        // Not necessarily it will have some variables
-        block: Vec<Builtins>, 
-        scope: Scope
-    },
+    InnerScope(InnerScope),
 
     D_type(D_type),
     Operation(Operation),
@@ -90,10 +115,8 @@ pub enum Builtins {
         expr: Vec<Builtins>
     },
 
-    JUMPIF {
-        n: i32,
-        expr: Vec<Builtins>
-    },
+    Loop(Loop)
+
 }
 
 impl PartialOrd for Builtins {    
@@ -153,7 +176,7 @@ impl Builtins {
                 return Ok(expr);
             },
 
-            Builtins::InnerScope { inner_vsec: _, block, scope: _ } => {
+            Builtins::InnerScope (InnerScope{ inner_vsec: _, block, scope: _ }) => {
                 return Ok(block);
             },
 
@@ -187,8 +210,10 @@ impl Builtins {
         ( "MUL".to_string(), Builtins::Operation(Operation::MUL) ), 
         ( "DIV".to_string(), Builtins::Operation(Operation::DIV) ), 
 
-        ( "PRINT".to_string(), Builtins::Std_fns(Std_fns::PRINT_PLAIN) ),       // Std fns
+        ( "PRINT".to_string(), Builtins::Std_fns(Std_fns::PRINT) ),       // Std fns
+        ( "PRINTLN".to_string(), Builtins::Std_fns(Std_fns::PRINT_NEWLINE)),
         ( "PRINT_COOL".to_string(), Builtins::Std_fns(Std_fns::PRINT_COOL) ), 
+        
         ( "SINPUT".to_string(), Builtins::Std_fns(Std_fns::SINPUT) ), 
                        
         ("int".to_string(), Builtins::MemType(MemType::int)),           // MemType

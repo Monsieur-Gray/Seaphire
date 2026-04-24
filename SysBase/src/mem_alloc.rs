@@ -11,6 +11,8 @@ fn fetch_str(data: &Builtins) -> Result<String, &str> {
     }
 }
 
+
+
 fn chk_annotation(s: &String) -> String {
     if s.starts_with('?') {
         s.get(1..).unwrap().to_string().replace("\'", "")
@@ -20,6 +22,7 @@ fn chk_annotation(s: &String) -> String {
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------------
+// fast forward 2 years. WHAT THE FUCK DOES THIS MEAN???? 😭😭🥲
 //--------------------------------------------------------------------------------------------------------------------------------------
 pub fn mutate_mem(
     line: &Vec<Builtins>,

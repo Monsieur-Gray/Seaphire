@@ -1,28 +1,6 @@
-_VARS: 3
-    str a "hi"
-    float fractional 123.223
-    bool ?isTrue true
+_VARS: 0
 EOS!
 
 _MAIN:
-    PRINT a
-    {
-        @int ?shit 10
-        @int anothershit 20
-        
-        ADD shit anothershit
-
-        {
-            @str poo "Pooooo"
-            SUB 15 44
-            PRINT "Bro what"
-
-            {
-                MOV shit 30
-                MUL shit anothershit
-            } 
-        }
-    }
-
-    PRINT "EXITED GRACEFULLY" 
+    IF [true == true] PRINTLN "works!"
 _END:

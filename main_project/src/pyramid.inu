@@ -1,0 +1,21 @@
+_VARS: 3
+    int ?i 1
+    int max 10
+    str star "*"
+EOS!
+
+_MAIN:
+    WHILE [i <= max] {
+        @int ?j 1
+
+        WHILE [j <= i] {
+            PRINT star
+            MOV j ADD j 1
+        }
+
+        PRINTLN ""
+        MOV i ADD i 1
+    }
+
+    PRINTLN "done
+_END:

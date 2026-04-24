@@ -29,25 +29,35 @@ pub fn check_exec_line(
         // println!("---> {:?}\n\n", inp_line);
 
         match &inp_line {
-            Builtins::JUMPIF {
-                n: num,
-                expr: condition,
-            } => {
+            Builtins::Loop(Loop::WHILE_LOOP(
+                WHILE_LOOP { condition, block }
+            ))
+            => {
+                // OPTIMIZATION SUGGESTION (22/4/26) spawn another thread to only check if the loop condition is satisfied.
                 let condition = &condition[0];
-                // println!("exe> {:?}", condition);
 
-                let condition_isTrue = match condition.get_expression_type() {
+                let mut condition_isTrue = match condition.get_expression_type() {
                     Ok(_) => {
-                        Compare::eval_condition(&condition, &stack_hash, &heap_hash, &reg_hash)
+                        Compare::eval_condition(condition, &stack_hash, &heap_hash, &reg_hash)
                             .unwrap()
                     }
-                    Err(_) => fetch_bool(&condition).unwrap(),
+                    Err(_) => fetch_bool(condition).unwrap(),
                 };
-                if condition_isTrue {
-                    line_num += num - 1;
-                } else {
-                    line_num += 0;
-                }
+
+                while condition_isTrue {
+                    [stack_hash, heap_hash, reg_hash] =
+                    execute_line(&Builtins::InnerScope(block.to_owned()), stack_hash, heap_hash, reg_hash);
+
+                    // same code as before
+                    condition_isTrue = match condition.get_expression_type() {
+                        Ok(_) => {
+                            Compare::eval_condition(condition, &stack_hash, &heap_hash, &reg_hash)
+                                .unwrap()
+                        }
+                        Err(_) => fetch_bool(condition).unwrap(),
+                    };
+
+                } 
             }
 
             _ => {
@@ -317,37 +327,42 @@ fn execute_line(
             println!("\tbullshit{:?}", local_vmake);
         }
 
-        Builtins::InnerScope {
-            inner_vsec,
-            block: code_block,
-            scope,
-        } => {
-            let mut new_stack: std::collections::HashMap<String, Value> = stack_hash.clone();
-            let mut new_heap: std::collections::HashMap<String, Value> = heap_hash.clone();
+        Builtins::InnerScope( 
+            InnerScope { 
+                inner_vsec,
+                block: code_block,
+                scope,
+            }
+        ) => {
+            // let mut new_stack: std::collections::HashMap<String, Value> = stack_hash.clone();
+            // let mut new_heap: std::collections::HashMap<String, Value> = heap_hash.clone();
 
             if inner_vsec.is_some() {
                 for var in inner_vsec.as_ref().unwrap().iter() {
                     let var_exp = var.unwrap_expr_vec().unwrap(); // [ID("__"), Dtype(__)]
                     let new_value = var_exp[1].to_value(scope.clone());
-
+                    
                     match &var_exp[0] {
                         // id
                         Builtins::ID(id) => {
                             if id.starts_with('?') {
-                                let new_id = id.get(1..).unwrap().to_string().replace("\'", "");
-                                let _ = new_heap.insert(new_id, new_value);
+                                // let new_id = id.get(1..).unwrap().to_string().replace("\'", "");
+                                let new_id = id.strip_prefix("?").unwrap().to_string().replace("\'", "");
+
+                                let _ = heap_hash.insert(new_id, new_value);
                             } else {
                                 let new_id = id.to_string().replace("\'", "");
-                                let _ = new_stack.insert(new_id, new_value);
+                                let _ = stack_hash.insert(new_id, new_value);
                             }
                         }
                         _ => Throw!("Juswt a tiny boi"),
                     };
                 }
             };
-
-            // [stack_hash, heap_hash, reg_hash] = check_exec_line(code_block, new_stack, new_heap, reg_hash);
-            check_exec_line(code_block, new_stack, new_heap, reg_hash.clone());
+            
+            [stack_hash, heap_hash, reg_hash] = check_exec_line(code_block, stack_hash, heap_hash, reg_hash);
+            // println!("debug -> {:?}", code_block);
+            // check_exec_line(code_block, stack_hash.clone(), heap_hash.clone(), reg_hash.clone());
         }
 
         //ERROR HANDLING-----------------------------------------------------------------------------------------------------------------

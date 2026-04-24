@@ -5,25 +5,26 @@ _VARS: 3
 EOS!
 
 _MAIN:
-    PRINT a
+    PRINTLN a
     {
         @int ?shit 10
-        @int anothershit 20
+        @int anothershit 30
         
         ADD shit anothershit
 
         {
             @str poo "hitler"
             SUB 15 44
-            PRINT "Bro what"
-            JUMPIF -3 true
+            PRINTLN "Bro what"
 
             {
-                MOV shit 30
-                MUL shit anothershit
+                PRINTLN anothershit
+                PRINTLN shit
+                MOV shit ADD shit 30
+                PRINTLN shit
             } 
         }
     }
 
-    PRINT "EXITED GRACEFULLY" 
+    PRINTLN "EXITED GRACEFULLY" 
 _END:

@@ -30,3 +30,25 @@ OBJECTIVE-1 26/02/25 (FIXED)
 ---- 31/3/26 03:14pm Tue (pi)  ----
   I finally have my own desktop now. My HP Victus 15 laptop. Thank you dada <3.
   Lets start working again !
+
+
+---- 11/4/26 --:-- Sat  ----
+  1. Modified the PRINT function (the og function). It prints the given data without adding a newline character in the end.
+     felt the need to add it while creating the "Right Triangle Pyramid" pattern problem.
+
+  2. Added a function "PRINTLN" which prints the given data and adds a newline character in the end.
+
+  3. Fixed issues regarding Memory in scopes, especially during iteration
+
+
+---- 15/4/26 02:15pm Wed  ----
+  1. Adding While loops and For_loops. Added a new enum in defkeys.rs named Loops with 2 attributes -> WHILE_LOOP, FOR_LOOP.
+  
+---- 20/4/26 5:23pm Mon  ----
+  1. Gave InnerScope its own Struct Defination rather than being part of the enum Builtins. Increases modularity and helps with loops and functions.
+  * TO-DO : Improve the defination of InnerScope so that it works for Function, Loops and other blocks too.
+            Improve how InnerScope (blocks) are executed without causing excess memory overhead.
+  
+---- 20/4/26 5:23pm Mon  ----
+  To Fix :- Unable to use IF true <code> format. Issue with EXECUTE(_2) file. 
+  Fix in the section for if_exp

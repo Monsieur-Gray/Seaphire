@@ -5,7 +5,7 @@ use colored::Colorize;
 use SysBase::{SysThrow, PARSER};
 
 // use pipeline::CppCompiler::*;
-use core_utils::EXECUTE::check_exec_line;
+use core_utils::EXECUTE_2::check_exec_line;
 
 fn main() {
     use std::fs::read_to_string;
@@ -15,7 +15,7 @@ fn main() {
     let txt = if let Ok(bruh) = read_to_string(&file_name) {
         bruh
     } else {
-        crate::SysThrow!("I can't find this fucking file!\n\tYOU HAD ONE JOB!")
+        crate::SysThrow!("I can't find this ing file!\n\tYOU HAD ONE JOB!")
     };
 
     let (mvec, vvec) = PARSER::pest_parse(&txt);

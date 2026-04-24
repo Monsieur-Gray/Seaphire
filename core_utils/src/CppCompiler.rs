@@ -101,7 +101,7 @@ pub fn expr_to_cpp(
 //STANDARD FUNCTIONS------------------------------------------------------------------------------------
         Builtins::Expr { exp_type: ExpType::STDFN_EXP, expr} => {
             match &expr[0] {
-                Builtins::Std_fns(Std_fns::PRINT_COOL) | Builtins::Std_fns(Std_fns::PRINT_PLAIN) => {
+                Builtins::Std_fns(Std_fns::PRINT_COOL) | Builtins::Std_fns(Std_fns::PRINT) => {
                     let data_to_print = &expr[1];    // expr => [PRINT , <DTYPE>]
 
                     main_buff.push_str(

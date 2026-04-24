@@ -5,8 +5,8 @@ EOS!
 _MAIN:
     MOV a SINPUT "Enter something"
 
-    IF [a=="hi"] PRINT "You said hi"
-    ELIF [a=="hey"] PRINT "You said hey"
-    ELIF [a=="bye"] PRINT "You said bye"
-    ELSE PRINT "say something nice"
+    IF [a=="hi"] PRINTLN "You said hi"
+    ELIF [a=="hey"] PRINTLN "You said hey"
+    ELIF [a=="bye"] PRINTLN "You said bye"
+    ELSE PRINTLN "say something nice"
 _END:

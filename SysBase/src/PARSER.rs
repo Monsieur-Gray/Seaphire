@@ -188,16 +188,22 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>, sco
             line_vec.push(Builtins::Expr { exp_type: ExpType::MEM_INST_EXP,  expr: exp_vec  });
         },
 
-        Rule::jumpif_expr => {
-            let mut n = 0;
-            let mut cond: Vec<Builtins> = vec![];
+// To change!!
+        Rule::while_expr => {
+            let mut cond: Vec<Builtins> = vec![];       // ExpType
+            let mut exp_vec: Vec<Builtins> = vec![];     // Vec<Builtins> because it can contain both expressions and inner scopes
+            let exp_innerscope: InnerScope;
 
+            // while {condition: ExpType, block: InnerScope}
             for val in line.clone().into_inner() {
                 match val.as_rule() {
-                    Rule::INT => {  n = val.as_str().parse::<i32>().unwrap();  },
-                    Rule::BOOL => cond.push( parse_dtype(val).unwrap() ),
 
                     Rule::condition | Rule::logical_expr => cond.push(
+                        parse_exprs(&val, builtins_hash, scope_counter)
+                            .unwrap_expr_vec().unwrap()[0].to_owned()
+                    ),
+
+                    Rule::InnerScope => exp_vec.push(
                         parse_exprs(&val, builtins_hash, scope_counter)
                             .unwrap_expr_vec().unwrap()[0].to_owned()
                     ),
@@ -205,7 +211,18 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>, sco
                     _ => continue
                 };
             };
-            line_vec.push(Builtins::JUMPIF { n , expr: cond});
+
+            exp_innerscope = InnerScope {
+                inner_vsec: None,
+                block: exp_vec,
+                scope: Scope::Local(scope_counter+1)
+            };
+
+            line_vec.push(Builtins::Loop(
+                Loop::WHILE_LOOP(
+                    WHILE_LOOP { condition: cond, block:  exp_innerscope}
+                )
+            ));
         },
 
     //-----------IF-----------------ELIF-------------ELSE--------------------------------------
@@ -344,11 +361,10 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>, sco
                 None
             };
 
-            line_vec.push(Builtins::InnerScope {
-                inner_vsec: i_vsec,
-                block,
-                scope: Scope::Local(scope_counter+1)
-            });
+            line_vec.push(
+                Builtins::InnerScope(InnerScope { inner_vsec: i_vsec, block, scope: Scope::Local(scope_counter+1) })
+            );  
+
         },
 
 
@@ -394,7 +410,7 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>, sco
     };
 
 
-    let line_vec_with_scope = Builtins::InnerScope {
+/*     let line_vec_with_scope = Builtins::InnerScope {
         inner_vsec: None,
         block: line_vec,
         scope: {
@@ -404,6 +420,19 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>, sco
             }
         }
     };
+ */
+    let line_vec_with_scope = Builtins::InnerScope(
+        InnerScope {
+            inner_vsec: None, 
+            block: line_vec,
+            scope: {
+                match scope_counter {
+                    0 => Scope::GlobalScope,
+                    other => Scope::Local(other)
+                }
+            }
+        } 
+    ) ;
 
     return line_vec_with_scope;
 

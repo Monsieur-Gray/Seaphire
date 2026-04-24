@@ -3,7 +3,7 @@ optional_ws = _{" "*}
 newln = _{("\r\n" | "\n") ~ optional_ws}
 special_chars = _{"_"}
 escape_chars = _{"\t" | "\n"}
-extra_special_chars = _{"," | "-" | "+" | "/" | "*" | "\\" | "=" | ":" |  "(" | ")" | "@" | "?"}
+extra_special_chars = _{"," | "-" | "+" | "/" | "*" | "\\" | "!" | "=" | ":" |  "(" | ")" | "@" | "?"}
 char = _{ASCII_ALPHANUMERIC | special_chars }
 
 INT = @{("-" | "+"){0,1} ~ ASCII_DIGIT+}
@@ -14,7 +14,7 @@ BOOL = @{("true" | "false")}
 REGISTER = @{"$" ~ ASCII_DIGIT}
 D_TYPE = _{ BOOL | REGISTER | FLOAT | INT | STRLIT | ID  }
 
-Std_fn = {"PRINT_COOL" | "PRINT" | "SINPUT" }
+Std_fn = {"PRINTLN" | "PRINT_COOL" | "PRINT" |  "SINPUT" }
 Operations = { "ADD" | "SUB" | "MUL" | "DIV" }
 MemType = { "int" | "float" | "str" | "bool" }
 MemInst = {"MOV" | "DEL"}
@@ -37,7 +37,7 @@ mem_inst_expr = {MemInst ~ws~ (ID | REGISTER) ~ws~ (math_expr | condition | logi
 condition = {"[" ~optional_ws~ D_TYPE ~optional_ws~ conditional_oper ~optional_ws~ D_TYPE ~optional_ws~ "]"}
 logical_expr = {"[" ~optional_ws~ (condition | logical_expr) ~optional_ws~ logical_oper ~optional_ws~ (condition | logical_expr) ~optional_ws~ "]" ~optional_ws}
 
-jumpif_expr = {"JUMPIF" ~ws~ INT ~ws~ (BOOL | condition | logical_expr) ~optional_ws}
+while_expr = {"WHILE" ~ws~ (BOOL | condition | logical_expr | ID) ~optional_ws~newln*~ InnerScope ~optional_ws}
 
 if_expr = {"IF" ~ws~ (BOOL | condition | logical_expr | ID) ~ws~ parent_expr ~optional_ws}
 elif_expr = {"ELIF" ~ws~ (BOOL | condition | logical_expr | ID) ~ws~ parent_expr ~optional_ws}
@@ -47,7 +47,7 @@ if_else_expr = {if_expr  ~newln*~optional_ws~ else_expr}
 if_elif_expr = {if_expr ~ (newln*~optional_ws~ elif_expr)+ ~newln*~optional_ws~ else_expr }
 
 
-parent_expr = _{ stdfn_expr | mem_inst_expr | math_expr | jumpif_expr | if_elif_expr | if_else_expr | if_expr | Comment }
+parent_expr = _{ stdfn_expr | mem_inst_expr | math_expr | while_expr | if_elif_expr | if_else_expr | if_expr | Comment }
 
 inner_vsec = { (optional_ws~ local_var_make ~optional_ws~ newln*)* }
 inner_msec = { (optional_ws~ (parent_expr | InnerScope) ~optional_ws~ newln*)+ }

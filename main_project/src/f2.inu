@@ -4,12 +4,11 @@ _VARS: 2
 EOS!
 
 _MAIN:
-    PRINT num
-    MOV num ADD num 1
-    JUMPIF -2 [num <= 5]
+    WHILE [num <= 5] {
+        PRINTLN num
+        MOV num ADD num 1
+    }
 
-    JUMPIF +1 true
-
-    PRINT "done"
-    PRINT "boom"
+    PRINTLN "done"
+    PRINTLN "boom"
 _END:

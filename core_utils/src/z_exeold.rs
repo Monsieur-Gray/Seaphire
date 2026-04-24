@@ -89,7 +89,7 @@ fn execute_line(
                 Builtins::Std_fns(Std_fns::PRINT_COOL) => {
                     crate::PRINT::print_line(expr, &stack_hash, &heap_hash, &reg_hash, true)
                 }
-                Builtins::Std_fns(Std_fns::PRINT_PLAIN) => {
+                Builtins::Std_fns(Std_fns::PRINT) => {
                     crate::PRINT::print_line(expr, &stack_hash, &heap_hash, &reg_hash, false)
                 }
                 Builtins::Std_fns(Std_fns::SINPUT) => {
