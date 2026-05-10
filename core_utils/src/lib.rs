@@ -2,10 +2,9 @@
 
 extern crate colored;
 
-// pub mod EXECUTE;
-pub mod EXECUTE_2;
-pub mod compiler_tools;
-pub mod CppCompiler;
+pub mod EXECUTE;
+// pub mod compiler_tools;
+// pub mod CppCompiler;
 
 pub mod PRINT;
 pub mod Input;

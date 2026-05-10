@@ -30,6 +30,6 @@ pub fn get_parsed_inp(exp_line: &Vec<Builtins>) -> Builtins {
         }
     };
 
-    return outp;
+    return outp;        // type = Builtins::D_type
 
 }

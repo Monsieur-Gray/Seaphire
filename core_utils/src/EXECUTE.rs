@@ -1,6 +1,7 @@
 use SysBase::defkeys::*;
+use SysBase::memory_layout::*;
 use SysBase::mem_alloc::{insert_to_mem, mutate_mem};
-use SysBase::reg_alloc::{insert_to_reg, mutate_reg};
+// use SysBase::reg_alloc::{insert_to_reg, mutate_reg};
 
 // use core_utils::ARITHMETIC::perf_math;   // Acutal Location
 // use core_utils::Compare;
@@ -13,12 +14,13 @@ use SysBase::fetch_data::fetch_bool;
 
 // use crate::Input;
 
+// ! 8/5/26 --12:20AM-- Time for Big change (one of the biggest ever)
+// ! HASHMAPS Y'ALL WILL BE MISSED
 pub fn check_exec_line(
     block: &Vec<Builtins>,
-    mut stack_hash: std::collections::HashMap<String, Value>,
-    mut heap_hash: std::collections::HashMap<String, Value>,
-    mut reg_hash: std::collections::HashMap<String, Value>,
-) -> [std::collections::HashMap<String, Value>; 3] {
+    mem: &mut Memory,
+    env: &mut Env,
+) {
     let mut line_num: i32 = 0;
     loop {
         let inp_line = match block.get(line_num as usize) {
@@ -29,36 +31,44 @@ pub fn check_exec_line(
         // println!("---> {:?}\n\n", inp_line);
 
         match &inp_line {
-            Builtins::JUMPIF {
-                n: num,
-                expr: condition,
-            } => {
+            Builtins::Loop(Loop::WHILE_LOOP(
+                WHILE_LOOP { condition, block }
+            ))
+            => {
+                // OPTIMIZATION SUGGESTION (22/4/26) spawn another thread to only check if the loop condition is satisfied.
                 let condition = &condition[0];
-                // println!("exe> {:?}", condition);
 
-                let condition_isTrue = match condition.get_expression_type() {
+                let mut condition_isTrue = match condition.get_expression_type() {
                     Ok(_) => {
-                        Compare::eval_condition(&condition, &stack_hash, &heap_hash, &reg_hash)
+                        Compare::eval_condition(condition, mem, env)
                             .unwrap()
                     }
-                    Err(_) => fetch_bool(&condition).unwrap(),
+                    Err(_) => fetch_bool(condition).unwrap(),
                 };
-                if condition_isTrue {
-                    line_num += num - 1;
-                } else {
-                    line_num += 0;
-                }
+
+                while condition_isTrue {
+                    execute_line(&Builtins::InnerScope(block.to_owned()), mem, env);
+
+                    // same code as before
+                    condition_isTrue = match condition.get_expression_type() {
+                        Ok(_) => {
+                            Compare::eval_condition(condition, mem, env)
+                                .unwrap()
+                        }
+                        Err(_) => fetch_bool(condition).unwrap(),
+                    };
+
+                } 
             }
 
             _ => {
-                [stack_hash, heap_hash, reg_hash] =
-                    execute_line(&inp_line, stack_hash, heap_hash, reg_hash)
+                execute_line(&inp_line, mem, env)
             }
         };
 
         line_num += 1;
         if line_num >= block.len() as i32 {
-            break [stack_hash, heap_hash, reg_hash];
+            break;
         }
     }
 }
@@ -68,17 +78,16 @@ pub fn check_exec_line(
 
 fn execute_line(
     inp_expr: &Builtins,
-    mut stack_hash: std::collections::HashMap<String, Value>,
-    mut heap_hash: std::collections::HashMap<String, Value>,
-    mut reg_hash: std::collections::HashMap<String, Value>,
-) -> [std::collections::HashMap<String, Value>; 3] {
+    mem: &mut Memory,
+    env: &mut Env,
+) {
     match inp_expr {
         // maths expression  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         Builtins::Expr {
             exp_type: ExpType::MATH_EXP,
             expr,
         } => {
-            perf_math(expr, &stack_hash, &heap_hash, &reg_hash, true);
+            perf_math(expr, mem, env, true);
         }
 
         // standard functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -88,15 +97,15 @@ fn execute_line(
         } => {
             let _ = match &expr[0] {
                 Builtins::Std_fns(Std_fns::PRINT) => {
-                    crate::PRINT::print_line(expr, &stack_hash, &heap_hash, &reg_hash, false, false)
+                    crate::PRINT::print_line(expr, mem, env, false, false)
                 }
 
                 Builtins::Std_fns(Std_fns::PRINT_NEWLINE) => {
-                    crate::PRINT::print_line(expr, &stack_hash, &heap_hash, &reg_hash, true, false)
+                    crate::PRINT::print_line(expr, mem, env, true, false)
                 }
 
                 Builtins::Std_fns(Std_fns::PRINT_COOL) => {
-                    crate::PRINT::print_line(expr, &stack_hash, &heap_hash, &reg_hash, false, true)
+                    crate::PRINT::print_line(expr, mem, env, false, true)
                 }
                 Builtins::Std_fns(Std_fns::SINPUT) => {
                     println!("  ADVICE---> It is adviced to use 'SINPUT' where it's meant to be.")
@@ -111,20 +120,20 @@ fn execute_line(
             exp_type: ExpType::IF_EXP,
             expr: if_exp,
         } => {
-            // format of if_exp => [> Expr { exp_type: condition/logic, expr: [..] }, Expr { exp_type: __, expr: [..] } <]
-            let if_condition: &Vec<Builtins> = if_exp[0].unwrap_expr_vec().unwrap();
+            // format of if_exp => [> Expr { exp_type: dtype/condition/logic, expr: [..] }, Expr { exp_type: __, expr: [..] } <]
+            let if_condition = &if_exp[0];
 
-            let isTrue = match if_exp[0].get_expression_type() {
-                Ok(_) => {
-                    Compare::eval_condition(&if_exp[0].clone(), &stack_hash, &heap_hash, &reg_hash)
-                        .unwrap()
-                }
-                Err(_) => fetch_bool(&if_condition[0]).unwrap(),
-            };
+            let if_condition_isTrue = match if_exp[0].get_expression_type() {
+                    Ok(_) => {
+                        Compare::eval_condition(if_condition, mem, env)
+                            .unwrap()
+                    }
+                    Err(_) => fetch_bool(if_condition).unwrap(),
+                };
 
-            if isTrue {
+            if if_condition_isTrue {
                 let exp_to_parse = &if_exp[1];
-                return execute_line(exp_to_parse, stack_hash, heap_hash, reg_hash);
+                return execute_line(exp_to_parse, mem, env);
             }
         }
 
@@ -139,15 +148,15 @@ fn execute_line(
             let isTrue = match if_exp[0].get_expression_type() {
                 // The condition
                 Ok(_) => {
-                    Compare::eval_condition(&if_exp[0], &stack_hash, &heap_hash, &reg_hash).unwrap()
+                    Compare::eval_condition(&if_exp[0], mem, env).unwrap()
                 }
                 Err(_) => fetch_bool(&if_exp[0]).unwrap(),
             };
 
-            [stack_hash, heap_hash, reg_hash] = if isTrue {
-                execute_line(&if_exp[1], stack_hash, heap_hash, reg_hash)
+             if isTrue {
+                execute_line(&if_exp[1], mem, env)
             } else {
-                execute_line(&else_exp[0], stack_hash, heap_hash, reg_hash)
+                execute_line(&else_exp[0], mem, env)
             };
         }
         // IF-ELSE-ELIF ~~~~~~~~~~~~~~~~~~
@@ -161,14 +170,13 @@ fn execute_line(
             let isTrue = match if_exp[0].get_expression_type() {
                 // The condition
                 Ok(_) => {
-                    Compare::eval_condition(&if_exp[0], &stack_hash, &heap_hash, &reg_hash).unwrap()
+                    Compare::eval_condition(&if_exp[0], mem, env).unwrap()
                 }
                 Err(_) => fetch_bool(&if_exp[0]).unwrap(),
             };
 
             if isTrue {
-                [stack_hash, heap_hash, reg_hash] =
-                    execute_line(&if_exp[1], stack_hash, heap_hash, reg_hash);
+                execute_line(&if_exp[1], mem, env);
             } else {
                 let mut shouldRunElse = true; // executing the ELIF and ELSE block
 
@@ -177,26 +185,19 @@ fn execute_line(
 
                     let isElifTrue = match elif_exp[0].get_expression_type() {
                         // The condition
-                        Ok(_) => Compare::eval_condition(
-                            &elif_exp[0].clone(),
-                            &stack_hash,
-                            &heap_hash,
-                            &reg_hash,
-                        )
+                        Ok(_) => Compare::eval_condition(&elif_exp[0].clone(), mem, env)
                         .unwrap(),
                         Err(_) => fetch_bool(&if_exp[0]).unwrap(),
                     };
 
                     if isElifTrue {
-                        [stack_hash, heap_hash, reg_hash] =
-                            execute_line(&elif_exp[1], stack_hash, heap_hash, reg_hash);
+                        execute_line(&elif_exp[1], mem, env);
                         shouldRunElse = false;
                         break;
                     };
                 }
                 if shouldRunElse {
-                    [stack_hash, heap_hash, reg_hash] =
-                        execute_line(&else_exp[0], stack_hash, heap_hash, reg_hash);
+                    execute_line(&else_exp[0], mem, env);
                 };
             }
 
@@ -205,7 +206,7 @@ fn execute_line(
 
         // MEMORY INSTRUCTIONS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         Builtins::Expr {
-            exp_type: ExpType::MEM_INST_EXP,
+            exp_type: ExpType::MEM_INST_EXP,        // MOV , DEL
             expr,
         } => {
             match &expr[0] {
@@ -213,27 +214,28 @@ fn execute_line(
                 Builtins::MemInst(MemInst::MOV) => {
                     match &expr[1] {
                         Builtins::ID(_) => {
-                            heap_hash = match &expr[2] {
-                                // Input/New value
-                                Builtins::ID(_) => mutate_mem(&expr, &stack_hash, heap_hash),
+                            // Input/New  = expr[2]
+                            match &expr[2] {
+                                // resolve the id internally and assign its value to target variable
+                                Builtins::ID(_) => mutate_mem(&expr, mem, env),
 
                                 Builtins::D_type(_) => {
                                     let data_to_insert = expr[2].clone();
-                                    insert_to_mem(&expr, heap_hash, data_to_insert)
+                                    insert_to_mem(&expr, mem, env, data_to_insert)
                                 }
 
                                 Builtins::Expr {
                                     exp_type: ExpType::MATH_EXP,
                                     expr: math_expr,
                                 } => {
+                                    // returns data of type builtins::d_type
                                     let math_buff = Builtins::D_type(D_type::float(perf_math(
                                         math_expr,
-                                        &stack_hash,
-                                        &heap_hash,
-                                        &reg_hash,
+                                        mem,
+                                        env,
                                         false,
                                     )));
-                                    insert_to_mem(&expr, heap_hash, math_buff)
+                                    insert_to_mem(&expr, mem, env, math_buff)
                                 }
 
                                 Builtins::Expr {
@@ -244,7 +246,7 @@ fn execute_line(
                                                 Builtins::Std_fns(Std_fns::SINPUT) => crate::Input::get_parsed_inp(&std_expr),
                                                 other_fn => Throw!(format!("The following fucntion doesn't have a return type --> {:?}", other_fn))
                                             };
-                                    insert_to_mem(&expr, heap_hash, input_buff)
+                                    insert_to_mem(&expr, mem, env, input_buff)
                                 }
 
                                 _ => {
@@ -252,6 +254,7 @@ fn execute_line(
                                 }
                             };
                         }
+                        /*
                         Builtins::REGISTER(_) => {
                             reg_hash = match &expr[2] {
                                 // Input/New value
@@ -289,21 +292,24 @@ fn execute_line(
                                 }
                             };
                         }
+                        */
                         _ => (),
                     }
                 }
 
                 Builtins::MemInst(MemInst::DEL) => {
-                    let var = &SysBase::fetch_data::fetch_str(&expr[1]).unwrap();
-                    if reg_hash.contains_key(var) {
-                        reg_hash.remove(var);
-                    } else if stack_hash.contains_key(var) {
-                        stack_hash.remove(var);
-                    } else if heap_hash.contains_key(var) {
-                        heap_hash.remove(var);
-                    } else {
-                        Throw!(format!("FREE_MEM ::> No variable named '{}'", var));
-                    }
+                    let name = match &expr[1] {
+                        Builtins::ID(id) => {
+                            id
+                        },
+                        fuck => Throw!(
+                                format!("DEL expected a variable bruh! What the fuck is `{:?}` ?", fuck)
+                            )
+                    };
+                    let ptr = env.remove(&name);
+                    mem.dealloc(ptr);
+
+                    // Throw!(format!("FREE_MEM ::> No variable named '{}'", var));
                 }
 
                 _ => Throw!("I threw up in execute_line"),
@@ -317,37 +323,42 @@ fn execute_line(
             println!("\tbullshit{:?}", local_vmake);
         }
 
-        Builtins::InnerScope {
-            inner_vsec,
-            block: code_block,
-            scope,
-        } => {
-            let mut new_stack: std::collections::HashMap<String, Value> = stack_hash.clone();
-            let mut new_heap: std::collections::HashMap<String, Value> = heap_hash.clone();
+        Builtins::InnerScope( 
+            InnerScope { 
+                inner_vsec,
+                block: code_block,
+                scope,
+            }
+        ) => {
 
             if inner_vsec.is_some() {
                 for var in inner_vsec.as_ref().unwrap().iter() {
                     let var_exp = var.unwrap_expr_vec().unwrap(); // [ID("__"), Dtype(__)]
-                    let new_value = var_exp[1].to_value(scope.clone());
 
-                    match &var_exp[0] {
-                        // id
+                    let name: String;
+
+                    let is_mutable = match &var_exp[0] {
                         Builtins::ID(id) => {
                             if id.starts_with('?') {
-                                let new_id = id.get(1..).unwrap().to_string().replace("\'", "");
-                                let _ = new_heap.insert(new_id, new_value);
-                            } else {
-                                let new_id = id.to_string().replace("\'", "");
-                                let _ = new_stack.insert(new_id, new_value);
+                                name = id[1..].to_string(); 
+                                true
                             }
-                        }
-                        _ => Throw!("Juswt a tiny boi"),
+                            else{
+                                name = id.to_string();
+                                false
+                            }
+                        },
+                        _ => Throw!("Juswt a tiny boi")
                     };
+
+                // Allocation inside inners
+                    let value = var_exp[1].to_data(scope.clone(), is_mutable);
+                    let ptr = mem.alloc(value);
+                    env.insert(name, ptr);
+
                 }
             };
-
-            // [stack_hash, heap_hash, reg_hash] = check_exec_line(code_block, new_stack, new_heap, reg_hash);
-            check_exec_line(code_block, new_stack, new_heap, reg_hash.clone());
+            check_exec_line(code_block, mem, env);
         }
 
         //ERROR HANDLING-----------------------------------------------------------------------------------------------------------------
@@ -355,6 +366,4 @@ fn execute_line(
         Builtins::Comment => (),
         bruh => Throw!(format!("UNIMPLEMENTED FUNCTIONALITY ==> {:?}", bruh)),
     };
-
-    return [stack_hash, heap_hash, reg_hash];
 }

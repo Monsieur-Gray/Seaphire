@@ -3,14 +3,14 @@
 use std::cmp::Ordering;
 use SysBase::defkeys::*;
 use SysBase::fetch_data::fetch_bool;
-use SysBase::fetch_data::get_val;
+use SysBase::fetch_data::get_data;
+use SysBase::memory_layout::{Env, Memory};
 use SysBase::Throw;
 
 pub fn eval_condition(
     logic: &Builtins,
-    stack_hash: &std::collections::HashMap<String, Value>,
-    heap_hash: &std::collections::HashMap<String, Value>,
-    reg_hash: &std::collections::HashMap<String, Value>,
+    mem: &Memory,
+    env: &Env
 ) -> Option<bool> {
     // Conditional = [x > y] or [x==y]
     // Logical = [ x>y || [x==y] ]
@@ -26,19 +26,13 @@ pub fn eval_condition(
         ExpType::CONDITION => {
             // return Some(make_tree(&logic, stack_hash, heap_hash, reg_hash));
             return Some(damedame(
-                &logic.unwrap_expr_vec().unwrap(),
-                stack_hash,
-                heap_hash,
-                reg_hash,
+                &logic.unwrap_expr_vec().unwrap(), mem, env
             ));
         }
         ExpType::LOGIC_EXP => match logic.get_expression_type().unwrap() {
             ExpType::CONDITION => {
                 return Some(make_tree(
-                    &logic.unwrap_expr_vec().unwrap()[0],
-                    stack_hash,
-                    heap_hash,
-                    reg_hash,
+                    &logic.unwrap_expr_vec().unwrap()[0], mem, env
                 ));
             }
             _ => {
@@ -54,9 +48,8 @@ pub fn eval_condition(
 
 fn make_tree(
     expr: &Builtins,
-    stack_hash: &std::collections::HashMap<String, Value>,
-    heap_hash: &std::collections::HashMap<String, Value>,
-    reg_hash: &std::collections::HashMap<String, Value>,
+    mem: &Memory,
+    env: &Env
 ) -> bool {
     let outp = match expr.get_expression_type() {
         Ok(eT) => match eT {
@@ -66,23 +59,17 @@ fn make_tree(
                 let b = &ex_vec[2];
 
                 let eval_a = match a.get_expression_type().unwrap() {
-                    ExpType::LOGIC_EXP => make_tree(a, stack_hash, heap_hash, reg_hash),
+                    ExpType::LOGIC_EXP => make_tree(a, mem, env),
                     ExpType::CONDITION => damedame(
-                        a.unwrap_expr_vec().unwrap(),
-                        stack_hash,
-                        heap_hash,
-                        reg_hash,
+                        a.unwrap_expr_vec().unwrap(), mem, env
                     ),
                     _ => Throw!("Compare:: booyah a"),
                 };
 
                 let eval_b = match b.get_expression_type().unwrap() {
-                    ExpType::LOGIC_EXP => make_tree(b, stack_hash, heap_hash, reg_hash),
+                    ExpType::LOGIC_EXP => make_tree(b, mem, env),
                     ExpType::CONDITION => damedame(
-                        b.unwrap_expr_vec().unwrap(),
-                        stack_hash,
-                        heap_hash,
-                        reg_hash,
+                        b.unwrap_expr_vec().unwrap(), mem, env
                     ),
                     _ => Throw!("Compare:: booyah b"),
                 };
@@ -95,13 +82,13 @@ fn make_tree(
 
             ExpType::CONDITION => {
                 let c = expr.unwrap_expr_vec().unwrap();
-                damedame(c, stack_hash, heap_hash, reg_hash)
+                damedame(c, mem, env)
             }
             _ => panic!("make_tree:: bagua"),
         },
         Err(duh) => Throw!(format!("maketree:: {:?}", duh)),
     };
-    // println!("outp ----> {:?}\n", get_val(&Builtins::ID("hi".to_string()), stack_hash, heap_hash, reg_hash));
+    // println!("outp ----> {:?}\n", get_data(&Builtins::ID("hi".to_string()), stack_hash, heap_hash, reg_hash));
     outp
 }
 
@@ -109,16 +96,15 @@ fn make_tree(
 // kinda the HEART of eval_condition, actually evaluates the condition. Fuck nomenclature and fuck me!
 fn damedame(
     condition: &Vec<Builtins>,
-    stack_hash: &std::collections::HashMap<String, Value>,
-    heap_hash: &std::collections::HashMap<String, Value>,
-    reg_hash: &std::collections::HashMap<String, Value>,
+    mem: &Memory,
+    env: &Env
 ) -> bool {
     if condition.len() == 1 && fetch_bool(condition.get(0).unwrap()).unwrap() {
         return fetch_bool(condition.get(0).unwrap()).unwrap();
     } else {
         // println!("---> {:?}", condition.get(2));
-        let lhs = get_val(condition.get(0).unwrap(), stack_hash, heap_hash, reg_hash).unwrap();
-        let rhs = get_val(condition.get(2).unwrap(), stack_hash, heap_hash, reg_hash).unwrap();
+        let lhs = &get_data(condition.get(0).unwrap(), mem, env);
+        let rhs = &get_data(condition.get(2).unwrap(), mem, env);
 
         let oper = condition.get(1).unwrap();
         let ans = lhs.partial_cmp(&rhs);
