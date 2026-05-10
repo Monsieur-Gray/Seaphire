@@ -1,0 +1,21 @@
+{
+	"nodes":[
+		{"id":"c49558c0cbff41ca","type":"text","text":"New Memory Management and Layout","x":-500,"y":-300,"width":250,"height":60,"color":"6"},
+		{"id":"d1561f6b824dc427","type":"text","text":"Issues with the previous ","x":-500,"y":-700,"width":250,"height":60},
+		{"id":"33579e8e55a12712","type":"text","text":"Using 2 hashmaps for data allocation and deallocation is very memory consuming as we know. Highly inefficient.\n","x":-688,"y":-563,"width":250,"height":120},
+		{"id":"e1db33b66e079005","type":"text","text":"Rust's ownership model made it really difficult to implement a dynamic allocator so used `.clone()` without thinking 😭","x":-348,"y":-563,"width":250,"height":120},
+		{"id":"4bc85ba76e1eb229","type":"text","text":"### Idea","x":-670,"y":-160,"width":90,"height":50},
+		{"id":"35211714ff543103","type":"text","text":"Storing data contiguously in a vector `Vec<Builtins>`.\n\nA hashmap stores the name of the variable , and the **pointer to the data**.\n`HashMap<String, usize>`","x":-750,"y":-60,"width":250,"height":140},
+		{"id":"c64e4db3b64a58ea","type":"text","text":"## Implementation","x":-223,"y":-170,"width":250,"height":60,"color":"1"},
+		{"id":"9b4ae19ee8a915cb","x":-224,"y":-79,"width":251,"height":89,"type":"text","text":"> See [[Documentation 📃📃| How_it_works?]] for more"}
+	],
+	"edges":[
+		{"id":"1a929804a2dd066a","fromNode":"4bc85ba76e1eb229","fromSide":"bottom","toNode":"35211714ff543103","toSide":"top"},
+		{"id":"13ed0deb524ce468","fromNode":"d1561f6b824dc427","fromSide":"bottom","toNode":"e1db33b66e079005","toSide":"top"},
+		{"id":"db281ec831237a74","fromNode":"d1561f6b824dc427","fromSide":"bottom","toNode":"33579e8e55a12712","toSide":"top"},
+		{"id":"b9eca40f1682e71c","fromNode":"d1561f6b824dc427","fromSide":"bottom","toNode":"c49558c0cbff41ca","toSide":"top","color":"4"},
+		{"id":"890ba362f2c208b5","fromNode":"c49558c0cbff41ca","fromSide":"left","toNode":"4bc85ba76e1eb229","toSide":"top"},
+		{"id":"173cd6e1b840a0b8","fromNode":"c49558c0cbff41ca","fromSide":"right","toNode":"c64e4db3b64a58ea","toSide":"top"},
+		{"id":"07b259a79995d56b","fromNode":"c64e4db3b64a58ea","fromSide":"bottom","toNode":"9b4ae19ee8a915cb","toSide":"top"}
+	]
+}
