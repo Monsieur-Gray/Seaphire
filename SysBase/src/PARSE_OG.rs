@@ -9,8 +9,8 @@ use crate::defkeys::*;
 #[grammar = "grammar.pest"]
 pub struct CaxyParser;
 
-pub fn pest_parse(unparsed_filestr: &String) -> (Option<Pair<Rule>>, Option<Pair<Rule>>){
-    let file = match CaxyParser::parse(Rule::file, unparsed_filestr.as_str()) {
+pub fn pest_parse(unparsed_filestr: &str) -> (Option<Pair<'_, Rule>>, Option<Pair<'_, Rule>>){
+    let file = match CaxyParser::parse(Rule::file, unparsed_filestr) {
         Ok(mut outp) => outp.next().unwrap(),
         Err(fucking_error) => crate::SysThrow!(format!( "SyntaxError at line: {}\n\nNo matching expression with the following format found" ,fucking_error ))
     };
@@ -26,13 +26,14 @@ pub fn pest_parse(unparsed_filestr: &String) -> (Option<Pair<Rule>>, Option<Pair
     return (mvec, vvec);
 }
 
+// ------------------------------ make_msec --------------------------------------
 
-pub fn calloc(vinp: Option<Pair<Rule>>) -> [HashMap<String, Value>; 3] {
+/* pub fn calloc(vinp: Option<Pair<Rule>>) -> [HashMap<String, MemCell>; 3] {
     let mut line_num = -1;  // consider the extra first term (number of variables)
     let mut vsec_size = 0;
 
-    let mut stack_hash: HashMap<String, Value> = HashMap::new();
-    let mut heap_hash: HashMap<String, Value> = HashMap::new();
+    let mut stack_hash: HashMap<String, MemCell> = HashMap::new();
+    let mut heap_hash: HashMap<String, MemCell> = HashMap::new();
 
     for i in vinp.unwrap().into_inner() {
         match i.as_rule() {
@@ -53,7 +54,7 @@ pub fn calloc(vinp: Option<Pair<Rule>>) -> [HashMap<String, Value>; 3] {
                                 (Rule::INT, "int") => Builtins::D_type(D_type::int(jstr.parse::<i32>().unwrap())),
                                 (Rule::FLOAT, "float") => Builtins::D_type(D_type::float(jstr.parse::<f32>().unwrap())),
                                 (Rule::BOOL, "bool") => Builtins::D_type(D_type::bool(jstr.parse::<bool>().unwrap())),
-                                (Rule::STRLIT, "str") => Builtins::D_type(D_type::str(jstr.to_string())),
+                                (Rule::STRLIT, "str") => Builtins::D_type(D_type::str(jstr[1..jstr.len()-1].to_string())),
 
                                 (dtyp, vtyp) => Throw!( format!("VariableType [{:?}] and value of the variable [{:?}] do not match", vtyp, dtyp))
                             }
@@ -65,8 +66,8 @@ pub fn calloc(vinp: Option<Pair<Rule>>) -> [HashMap<String, Value>; 3] {
                 if id.starts_with('?') {
                     id.remove(0);
                     heap_hash.insert(
-                    id, 
-                    Value {
+                    id,
+                    MemCell {
                         value: data,
                         scope: Scope::GlobalScope
                     }
@@ -74,8 +75,8 @@ pub fn calloc(vinp: Option<Pair<Rule>>) -> [HashMap<String, Value>; 3] {
                 }
                 else {
                     stack_hash.insert(
-                        id, 
-                        Value {
+                        id,
+                        MemCell {
                             value: data,
                             scope: Scope::GlobalScope
                         }
@@ -88,13 +89,17 @@ pub fn calloc(vinp: Option<Pair<Rule>>) -> [HashMap<String, Value>; 3] {
     };
 
     if line_num != vsec_size {  Throw!("Incorrect shit of variables");  }
-    else {  
-        let reg_hash: HashMap<String, Value> = HashMap::new();
+    else {
+        let reg_hash: HashMap<String, MemCell> = HashMap::new();
         return [stack_hash, heap_hash, reg_hash];
     };
 }
 
-pub fn make_msec(msec: Option<Pair<Rule>>) -> Vec<Builtins> {
+ */
+
+
+// ------------------------------ make_msec --------------------------------------
+ pub fn make_msec(msec: Option<Pair<Rule>>) -> Vec<Builtins> {
     let mut MAIN_SEC: Vec<Builtins> = vec![];
     let builtins_hash = Builtins::builtin_hash();
 
@@ -102,7 +107,7 @@ pub fn make_msec(msec: Option<Pair<Rule>>) -> Vec<Builtins> {
         let line_vec = parse_exprs(&line, &builtins_hash, 0)
                             .unwrap_expr_vec().unwrap()[0].to_owned();
          // 0 because it will be the GlobalScope / Main Scope
-        
+
         MAIN_SEC.push(line_vec);
     };
     return MAIN_SEC;
@@ -113,10 +118,10 @@ pub fn make_msec(msec: Option<Pair<Rule>>) -> Vec<Builtins> {
 fn parse_dtype(p: Pair<Rule>) -> Option<Builtins> {
     let pstr = p.as_str();
     let output = match p.as_rule() {
-        Rule::INT =>    Some(  Builtins::D_type( D_type::int(pstr.parse::<i32>().unwrap()) )    ),
-        Rule::FLOAT =>  Some(  Builtins::D_type( D_type::float(pstr.parse::<f32>().unwrap()) )  ),
-        Rule::BOOL =>   Some(  Builtins::D_type( D_type::bool(pstr.parse::<bool>().unwrap()) )  ),
-        Rule::STRLIT => Some( Builtins::D_type( D_type::str(pstr.to_string()) ) ),
+        Rule::INT =>    Some(  Builtins::D_type( D_type::int(pstr.parse::<i32>().unwrap())     ) ),
+        Rule::FLOAT =>  Some(  Builtins::D_type( D_type::float(pstr.parse::<f32>().unwrap())   ) ),
+        Rule::BOOL =>   Some(  Builtins::D_type( D_type::bool(pstr.parse::<bool>().unwrap())   ) ),
+        Rule::STRLIT => Some( Builtins::D_type( D_type::str(pstr[1..pstr.len()-1].to_string()) ) ),     // to remove trailing /"
         Rule::REGISTER => Some(  Builtins::REGISTER(pstr.to_string()) ),
         Rule::ID =>     Some(  Builtins::ID    ( pstr.to_string() )   ),
         _ => None
@@ -149,7 +154,7 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>, sco
 
         Rule::stdfn_expr => {
             let mut exp_vec: Vec<Builtins> = vec![];
-            
+
             for expr_iter in line.clone().into_inner() {
                 match expr_iter.as_rule() {
                     Rule::Std_fn | Rule::logical_oper => exp_vec.push(  builtins_hash.get(expr_iter.as_str()).unwrap().to_owned() ),
@@ -158,7 +163,7 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>, sco
                         parse_exprs(&expr_iter, builtins_hash, scope_counter)
                             .unwrap_expr_vec().unwrap()[0].to_owned()
                     ),
-                    
+
                     Rule::condition => exp_vec.push(
                         parse_exprs(&expr_iter, builtins_hash, scope_counter)
                             .unwrap_expr_vec().unwrap()[0].to_owned()
@@ -174,10 +179,11 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>, sco
             let mut exp_vec: Vec<Builtins> = vec![];
 
             for expr_iter in line.clone().into_inner() {
+                // println!("fucking bullshit => {:?}", expr_iter);
                 match expr_iter.as_rule() {
                     Rule::MemInst => exp_vec.push(  builtins_hash.get(expr_iter.as_str()).unwrap().to_owned() ),
 
-                    Rule::math_expr | Rule::stdfn_expr => exp_vec.push(
+                    Rule::math_expr | Rule::condition | Rule::logical_expr | Rule::stdfn_expr => exp_vec.push(
                         parse_exprs(&expr_iter, builtins_hash, scope_counter)
                             .unwrap_expr_vec().unwrap()[0].to_owned()
                     ),
@@ -187,16 +193,22 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>, sco
             line_vec.push(Builtins::Expr { exp_type: ExpType::MEM_INST_EXP,  expr: exp_vec  });
         },
 
-        Rule::jumpif_expr => {
-            let mut n = 0;
-            let mut cond: Vec<Builtins> = vec![];
+// To change!!
+        Rule::while_expr => {
+            let mut cond: Vec<Builtins> = vec![];       // ExpType
+            let mut exp_vec: Vec<Builtins> = vec![];     // Vec<Builtins> because it can contain both expressions and inner scopes
+            let exp_innerscope: InnerScope;
 
+            // while {condition: ExpType, block: InnerScope}
             for val in line.clone().into_inner() {
                 match val.as_rule() {
-                    Rule::INT => {  n = val.as_str().parse::<i32>().unwrap();  },
-                    Rule::BOOL => cond.push( parse_dtype(val).unwrap() ),
 
-                    Rule::logical_expr => cond.push(
+                    Rule::condition | Rule::logical_expr => cond.push(
+                        parse_exprs(&val, builtins_hash, scope_counter)
+                            .unwrap_expr_vec().unwrap()[0].to_owned()
+                    ),
+
+                    Rule::InnerScope => exp_vec.push(
                         parse_exprs(&val, builtins_hash, scope_counter)
                             .unwrap_expr_vec().unwrap()[0].to_owned()
                     ),
@@ -204,7 +216,18 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>, sco
                     _ => continue
                 };
             };
-            line_vec.push(Builtins::JUMPIF { n , expr: cond});
+
+            exp_innerscope = InnerScope {
+                inner_vsec: None,
+                block: exp_vec,
+                scope: Scope::Local(scope_counter+1)
+            };
+
+            line_vec.push(Builtins::Loop(
+                Loop::WHILE_LOOP(
+                    WHILE_LOOP { condition: cond, block:  exp_innerscope}
+                )
+            ));
         },
 
     //-----------IF-----------------ELIF-------------ELSE--------------------------------------
@@ -217,7 +240,7 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>, sco
                         let x = &parse_exprs(
                             &expr_iter, builtins_hash, scope_counter
                         ).unwrap_expr_vec().unwrap()[0].to_owned();
-                        
+
                         exp_vec.push( x.clone() );
                     },
                 };
@@ -227,7 +250,7 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>, sco
 
         Rule::else_expr => {
             let mut exp_vec = vec![];
-            for expr_iter in line.clone().into_inner() 
+            for expr_iter in line.clone().into_inner()
             {
                 exp_vec.push(
                     parse_exprs(&expr_iter, builtins_hash, scope_counter)
@@ -239,7 +262,7 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>, sco
 
         Rule::elif_expr => {
             let mut exp_vec = vec![];
-            for expr_iter in line.clone().into_inner() 
+            for expr_iter in line.clone().into_inner()
             {
                 exp_vec.push(
                     parse_exprs(&expr_iter, builtins_hash, scope_counter)
@@ -298,7 +321,7 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>, sco
             for expr_iter in line.clone().into_inner() {
                 match expr_iter.as_rule() {
                     Rule::conditional_oper => exp_vec.push(  builtins_hash.get(expr_iter.as_str()).unwrap().to_owned() ),
-                    _  => exp_vec.push(  
+                    _  => exp_vec.push(
                         parse_dtype( expr_iter ).unwrap()
                   ),
                 }
@@ -335,22 +358,21 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>, sco
                         format!("parse_exp::InnerScope   This bullshit is not allowed ---> {:?}", errstuff)
                     )
                 };
-            };   
+            };
 
-            let i_vsec = if inner_vvec.len() != 0 { 
-                Some(inner_vvec) 
-            } else { 
+            let i_vsec = if inner_vvec.len() != 0 {
+                Some(inner_vvec)
+            } else {
                 None
             };
 
-            line_vec.push(Builtins::InnerScope { 
-                inner_vsec: i_vsec,
-                block,  
-                scope: Scope::Local(scope_counter+1)  
-            });
+            line_vec.push(
+                Builtins::InnerScope(InnerScope { inner_vsec: i_vsec, block, scope: Scope::Local(scope_counter+1) })
+            );  
+
         },
-         
-         
+
+
         Rule::local_var_make => {
             let mut exp_vec = vec![];
             let mut memtype = "";
@@ -358,11 +380,11 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>, sco
             for expr_iter in line.clone().into_inner() {
                 let jstr = expr_iter.as_str();
                 match expr_iter.as_rule() {
-                    Rule::MemType => { 
-                        memtype = jstr; 
+                    Rule::MemType => {
+                        memtype = jstr;
                     },
 
-                    Rule::ID => { 
+                    Rule::ID => {
                         exp_vec.push( Builtins::ID( jstr.to_string() ) );
                     },
 
@@ -372,16 +394,16 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>, sco
                             (Rule::FLOAT, "float") => Builtins::D_type(D_type::float(jstr.parse::<f32>().unwrap())),
                             (Rule::BOOL, "bool") => Builtins::D_type(D_type::bool(jstr.parse::<bool>().unwrap())),
                             (Rule::STRLIT, "str") => Builtins::D_type(D_type::str(jstr.to_string())),
-    
+
                             (dtyp, vtyp) => Throw!( format!("VariableType [{:?}] and value of the variable [{:?}] do not match", vtyp, dtyp))
                         }
                     })
                 };
             };
 
-            line_vec.push( 
-                Builtins::Expr { exp_type: ExpType::LOCAL_VAR_MAKE, 
-                expr: exp_vec } 
+            line_vec.push(
+                Builtins::Expr { exp_type: ExpType::LOCAL_VAR_MAKE,
+                expr: exp_vec }
             )
 
         },
@@ -392,8 +414,8 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>, sco
         _duh => SysThrow!( format!("I don't have any idea how you fucked up this bad (parse_exprs) >>>> {:?}", line) )
     };
 
-    
-    let line_vec_with_scope = Builtins::InnerScope {
+
+/*     let line_vec_with_scope = Builtins::InnerScope {
         inner_vsec: None,
         block: line_vec,
         scope: {
@@ -403,8 +425,20 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>, sco
             }
         }
     };
+ */
+    let line_vec_with_scope = Builtins::InnerScope(
+        InnerScope {
+            inner_vsec: None, 
+            block: line_vec,
+            scope: {
+                match scope_counter {
+                    0 => Scope::GlobalScope,
+                    other => Scope::Local(other)
+                }
+            }
+        } 
+    ) ;
 
     return line_vec_with_scope;
 
 }
-

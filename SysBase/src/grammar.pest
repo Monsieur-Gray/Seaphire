@@ -39,13 +39,12 @@ logical_expr = {"[" ~optional_ws~ (condition | logical_expr) ~optional_ws~ logic
 
 while_expr = {"WHILE" ~ws~ (BOOL | condition | logical_expr | ID) ~optional_ws~newln*~ InnerScope ~optional_ws}
 
-if_expr = {"IF" ~ws~ (BOOL | condition | logical_expr | ID) ~ws~ parent_expr ~optional_ws}
-elif_expr = {"ELIF" ~ws~ (BOOL | condition | logical_expr | ID) ~ws~ parent_expr ~optional_ws}
-else_expr = {"ELSE" ~ws~ parent_expr ~optional_ws}
+if_expr = {"IF" ~ws~ (BOOL | condition | logical_expr | ID) ~ws~ (parent_expr | InnerScope) ~optional_ws}
+elif_expr = {"ELIF" ~ws~ (BOOL | condition | logical_expr | ID) ~ws~ (parent_expr | InnerScope) ~optional_ws}
+else_expr = {"ELSE" ~ws~ (parent_expr | InnerScope) ~optional_ws}
 
 if_else_expr = {if_expr  ~newln*~optional_ws~ else_expr}
-if_elif_expr = {if_expr ~ (newln*~optional_ws~ elif_expr)+ ~newln*~optional_ws~ else_expr }
-
+if_elif_expr = {if_expr ~ (newln*~optional_ws~ elif_expr)+ ~newln*~optional_ws~ else_expr } 
 
 parent_expr = _{ stdfn_expr | mem_inst_expr | math_expr | while_expr | if_elif_expr | if_else_expr | if_expr | Comment }
 

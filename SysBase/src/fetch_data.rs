@@ -1,4 +1,5 @@
-use crate::defkeys::{Builtins, D_type, Value};
+use crate::defkeys::{Builtins, D_type};
+use crate::memory_layout::*;
 
 pub fn fetch_num(data: &Builtins) -> Result<f32, &str> {
     match data {
@@ -26,40 +27,62 @@ pub fn fetch_bool(data: &Builtins) -> Result<bool, &str> {
 
 /*================================================================================ */
 
-//*================================================================================ */
 /*================================================================================ */
 
-pub fn get_val(var: &Builtins,
-    stack_hash: &std::collections::HashMap<String, Value>,
-    heap_hash:  &std::collections::HashMap<String, Value>,
-    reg_hash:   &std::collections::HashMap<String, Value>) -> Option<Builtins>
+// var = variable you want to fetch, other = memory (old model)
+// (NEW) var = variable you want to fetch, mem: Memory = to fetch the value, env: Env = to fetch the address of the value
+// var -> env => pointer -> mem => data  
+// todo later fix the lifetime issue
+pub fn get_data<'m>(var: &'m Builtins, 
+    mem: &'m Memory, 
+    env: &Env
+) -> &'m Builtins
 {
-    let a = match var {
+    let a: &'m Builtins = match var {
+        Builtins::ID(id) | Builtins::REGISTER(id) => {
+            let ptr = env.get(id);
+            &mem.get(*ptr).data
+        },
         Builtins::D_type(_) => var,
-        Builtins::ID(id) => {
-            if let Some(v) = stack_hash.get( id ) { 
-                &v.value 
-            }
-            else if let Some(v) = heap_hash.get( id ){
-                &v.value 
-                }
-            else { 
-                crate::Throw!(format!("fetch::- No variable named {:?}", id))
-            }
-        },
-        Builtins::REGISTER(reg) => {
-            if let Some(v) = reg_hash.get( reg ) { 
-                &v.value 
-            }
-            else { 
-                crate::Throw!(format!("The following register is uninitiallized -> {:?}", reg))
-            }
-        },
         x => crate::Throw!( format!("What in actual fuck is this {:?}", x))
     };
     
-    return Some(a.clone());
+    return a;
 }
+
+// variable name => its memory_cell
+pub fn resolve_cell<'m>(
+    name: &str,
+    mem: &'m Memory,
+    env: &Env
+) -> &'m MemCell
+{
+    return mem.get(*env.get(name));
+}
+
+// variable name => its mutable memory_cell
+pub fn resolve_cell_mut<'m>(
+    name: &str,
+    mem: &'m mut Memory,
+    env: &Env
+) -> &'m mut MemCell
+{
+    return mem.get_mut(*env.get(name));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 fn chk_annotation(s: &String) -> String {
     if s.starts_with('?') {

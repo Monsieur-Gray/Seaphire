@@ -26,30 +26,36 @@ pub fn pest_parse(unparsed_filestr: &str) -> (Option<Pair<'_, Rule>>, Option<Pai
     return (mvec, vvec);
 }
 
+// ------------------------------ make_vsec --------------------------------------
 
-pub fn calloc(vinp: Option<Pair<Rule>>) -> [HashMap<String, Value>; 3] {
-    let mut line_num = -1;  // consider the extra first term (number of variables)
-    let mut vsec_size = 0;
 
-    let mut stack_hash: HashMap<String, Value> = HashMap::new();
-    let mut heap_hash: HashMap<String, Value> = HashMap::new();
+pub fn collect_vars(vinp: Option<Pair<Rule>>) -> Vec<VarDecl> {
+    let mut vars: Vec<VarDecl> = Vec::new();
+
+    // var_count must be equal to vsec_count, or throw error
+    let mut vsec_count: usize = 0;      // is bound to be declared (governed by the grammar)
+    let mut var_count = 0;      // maybe 0 (no variable made)
+    
 
     for i in vinp.unwrap().into_inner() {
         match i.as_rule() {
-            Rule::INT => {vsec_size = i.as_str().parse::<i32>().unwrap();},
+            Rule::INT => {vsec_count = i.as_str().parse::<usize>().unwrap();},
             Rule::var_make => {
-                let mut memtype = "";
+                let mut mem_type = "";
                 let mut id = String::new();
-                let mut data = Builtins::Comment;
+                let mut data: Builtins = Builtins::Comment;     // Cos im lazy af and i didnt want to do data: Option <Builtins> in case the data is wrong and shit
+                let is_mutable: bool;
 
-                for j in i.clone().into_inner() {
+                var_count += 1;
+
+                for j in i.into_inner() {
                     let jstr = j.as_str();
 
                     match j.as_rule() {
-                        Rule::MemType => { memtype = jstr; },
-                        Rule::ID => { id = jstr.to_string(); },
+                        Rule::MemType => {mem_type = jstr;},
+                        Rule::ID => {id = jstr.to_string();},
                         sometype => data = {
-                            match (sometype, memtype) {
+                            match (sometype, mem_type) {
                                 (Rule::INT, "int") => Builtins::D_type(D_type::int(jstr.parse::<i32>().unwrap())),
                                 (Rule::FLOAT, "float") => Builtins::D_type(D_type::float(jstr.parse::<f32>().unwrap())),
                                 (Rule::BOOL, "bool") => Builtins::D_type(D_type::bool(jstr.parse::<bool>().unwrap())),
@@ -57,44 +63,48 @@ pub fn calloc(vinp: Option<Pair<Rule>>) -> [HashMap<String, Value>; 3] {
 
                                 (dtyp, vtyp) => Throw!( format!("VariableType [{:?}] and value of the variable [{:?}] do not match", vtyp, dtyp))
                             }
-                         }
-                    };
-
-                };
+                        }
+                    } ;
+                } ;
 
                 if id.starts_with('?') {
+                    is_mutable = true;
                     id.remove(0);
-                    heap_hash.insert(
-                    id,
-                    Value {
-                        value: data,
-                        scope: Scope::GlobalScope
-                    }
-                    );
+                    vars.push( VarDecl {
+                        name: id, 
+                        data: data,
+                        scope: Scope::GlobalScope,
+                        is_mutable 
+                    });
+                    
                 }
                 else {
-                    stack_hash.insert(
-                        id,
-                        Value {
-                            value: data,
-                            scope: Scope::GlobalScope
-                        }
-                    );
+                    is_mutable = false;
+                    vars.push( VarDecl {
+                        name: id, 
+                        data: data,
+                        scope: Scope::GlobalScope,
+                        is_mutable 
+                    });
                 };
+
             },
             _ => continue
+
         };
-        line_num += 1;
+
     };
 
-    if line_num != vsec_size {  Throw!("Incorrect shit of variables");  }
-    else {
-        let reg_hash: HashMap<String, Value> = HashMap::new();
-        return [stack_hash, heap_hash, reg_hash];
-    };
+    // check if the number of variables dev told is equal. The developer has no life and must suffer
+    if var_count != vsec_count {
+        Throw!(format!("Incorrect shit of variables \n\tExpected {} | Got {} \n Dumbass can't even count bruh!", var_count, vsec_count));
+    }
+
+    return vars; 
 }
 
-pub fn make_msec(msec: Option<Pair<Rule>>) -> Vec<Builtins> {
+// ------------------------------ make_msec --------------------------------------
+ pub fn make_msec(msec: Option<Pair<Rule>>) -> Vec<Builtins> {
     let mut MAIN_SEC: Vec<Builtins> = vec![];
     let builtins_hash = Builtins::builtin_hash();
 
@@ -129,7 +139,6 @@ fn parse_dtype(p: Pair<Rule>) -> Option<Builtins> {
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>, scope_counter: u32) -> Builtins {
     let mut line_vec = vec![];
-    // let mut scope_counter: u32 = 0;
 
     match line.as_rule() {
 
@@ -171,8 +180,9 @@ fn parse_exprs(line: &Pair<Rule>, builtins_hash: &HashMap<String, Builtins>, sco
         },
 
         Rule::mem_inst_expr => {
-            let mut exp_vec: Vec<Builtins> = vec![];
 
+            let mut exp_vec: Vec<Builtins> = vec![];
+            // MEM_INST , var_name , data
             for expr_iter in line.clone().into_inner() {
                 // println!("fucking bullshit => {:?}", expr_iter);
                 match expr_iter.as_rule() {

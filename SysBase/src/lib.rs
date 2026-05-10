@@ -1,8 +1,8 @@
 #![allow(non_camel_case_types, non_snake_case)]
 
 pub mod defkeys;
+pub mod memory_layout;
 pub mod mem_alloc;
-pub mod reg_alloc;
 pub mod fetch_data;
 pub mod PARSER;
 

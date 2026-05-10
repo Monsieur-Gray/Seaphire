@@ -71,9 +71,11 @@ impl Scope {
 }
 
 #[derive(Debug, PartialEq, Clone)]          
-pub struct Value {
-    pub value: Builtins, 
-    pub scope: Scope
+pub struct VarDecl {
+    pub name: String,
+    pub data: Builtins,
+    pub scope: Scope,
+    pub is_mutable: bool, 
 }
 
 
@@ -163,10 +165,10 @@ impl Builtins {
         }
     }
 
-    pub fn to_value(&self, scope: Scope) -> Value {
+    pub fn to_data(&self, scope: Scope, is_mutable: bool) -> crate::memory_layout::MemCell {
         match self {
-            Builtins::D_type(_) => Value{ value: self.clone(), scope },
-            _ => crate::Throw!( format!("The following type -> '{:?}' cannot be interpreted as a ValueType", &self))
+            Builtins::D_type(_) => crate::memory_layout::MemCell{ data: self.clone(), scope , is_mutable},
+            _ => crate::Throw!( format!("The following type -> '{:?}' cannot be interpreted as a MemCellType", &self))
         }
     }
 

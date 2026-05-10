@@ -1,99 +1,129 @@
 use crate::defkeys::*;
+use crate::memory_layout::*;
 use crate::Throw;
-use std::collections::HashMap;
-
-//--------------------------------------------------------------------------------------------------------------------------------------
-fn fetch_str(data: &Builtins) -> Result<String, &str> {
-    match data {
-        Builtins::D_type(D_type::str(d)) => Ok(chk_annotation(d)),
-        Builtins::ID(d) => Ok(chk_annotation(d)),
-        _ => Err("fetch_str ::> Fetch Error!"),
-    }
-}
-
-
-
-fn chk_annotation(s: &String) -> String {
-    if s.starts_with('?') {
-        s.get(1..).unwrap().to_string().replace("\'", "")
-    } else {
-        s.to_string().replace("\'", "")
-    }
-}
 
 //--------------------------------------------------------------------------------------------------------------------------------------
 // fast forward 2 years. WHAT THE FUCK DOES THIS MEAN???? 😭😭🥲
 //--------------------------------------------------------------------------------------------------------------------------------------
+
+// REFACTORING TIME ! (08-05-2026 7:26pm)
+/*
+! Changes 
+? OLD: 
+    OLD : checks if the name exists and is it mutable
+    OLD : Used later for checking if the new and old data type matches thus enforcing typecheck
+
+? NEW : 
+    Implicity checks if the name exist, is_mutable, and in future will enforce typesafety too.
+    No need of fetch_str. Only IDs can be passed. fetch_str returns Ok() even for string_literals. 
+    Implement `match line[1] {ID => Ok ; _ => Fuck you} 
+*/
+
+// TODO: ENFORCE TYPE SAFETY
 pub fn mutate_mem(
     line: &Vec<Builtins>,
-    stack_hash: &HashMap<String, Value>,
-    heap_clone: HashMap<String, Value>,
-) -> HashMap<String, Value> {
-    let keyname = fetch_str(&line[1]).unwrap();
-    let ol_val = if let Some(nam) = heap_clone.get(&keyname) {
-        &nam.value
-    } else {
-        Throw!(format!(
-            "No MUTABLE variable named '{}' found\nMake sure its mutable",
-            keyname
-        ))
+    mem: &mut Memory,
+    env: &Env
+) {
+
+    let target_name = match &line[1] {
+        Builtins::ID(id) => id,
+        _ => Throw!("MutateMemError: Expected TARGET to be variable name. Got some other shit")
     };
 
-    let shit = line[2].to_value(Scope::GlobalScope);
-
-    let new_val = match &line[2] {
-        Builtins::D_type(_) => &shit,
-        Builtins::ID(id) => {
-            if let Some(v1) = stack_hash.get(id) {
-                v1
-            } else if let Some(v2) = heap_clone.get(id) {
-                v2
-            } else {
-                panic!("cry like a dog")
-            }
-        }
-        _ => panic!("You werent suppose tto put htat"),
+    let source = match &line[2] {
+        Builtins::ID(id) => id,
+        _ => Throw!("MutateMemError: Expected SOURCE to be variable name. Got some other shit")
     };
 
-    // println!("\t--o> {:?}", ol_val);
-    // println!("\t--n> {:?}", new_val);
-    let mut new_heap = heap_clone.clone();
-
-    if check_compatible(ol_val, &new_val.value, false) {
-        new_heap.entry(keyname).and_modify(|e| *e = new_val.clone());
+    let source_data = {
+        mem.get(
+            *env.get(source)
+        ).data.clone()
     };
 
-    new_heap
+    let target_ptr = env.get(target_name);
+    let target_mem_cell = mem.get_mut(*target_ptr);
+
+    if target_mem_cell.is_mutable {
+        // resolve the id internally and assign its value to target variable
+        // By defination line[2] is gonna be of type Builtins::ID() (enforced in EXECUTE.rs)
+        target_mem_cell.data = source_data;
+    }
+    else {
+       Throw!(format!("MutateMemError: The variable `{:?}` isn't mutable", target_name)); 
+    }
 }
+// Completed at 09:55PM 8/5/26
 
 //--------------------------------------------------------------------------------------------------------------------------------------
 
+// insert_to_mem is called when the data is already resolved and is only required to be put in memory.
+// direct_value is of type Builtins::D_Type
+// TODO: ENFORCE TYPE SAFETY
 pub fn insert_to_mem(
     line: &Vec<Builtins>,
-    mut heap_clone: HashMap<String, Value>,
+    mem: &mut Memory,
+    env: &Env,
     direct_value: Builtins,
-) -> HashMap<String, Value> {
-    let keyname = fetch_str(&line[1]).unwrap().clone();
+) {
 
-    let ol_val = if let Some(nam) = heap_clone.get(&keyname) {
-        &nam.value
-    } else {
-        Throw!(format!(
-            "No MUTABLE variable named '{}' found\nMake sure its mutable",
-            keyname
-        ))
+    let target_name = match &line[1] {
+        Builtins::ID(id) => id,
+        _ => Throw!("MutateMemError: Expected variable name. Got some other shit")
     };
 
-    if check_compatible(ol_val, &direct_value, true) {
-        heap_clone
-            .entry(keyname)
-            .and_modify(|e| *e = direct_value.to_value(Scope::GlobalScope));
+    let target_ptr = env.get(target_name);
+    let mem_cell = mem.get_mut(*target_ptr);
+
+    if mem_cell.is_mutable {
+        mem_cell.data = direct_value ;
+    }
+    else {
+        Throw!(format!("MutateMemError: The variable `{:?}` isn't mutable", target_name));
+    }
+ 
+}
+
+
+// New addition to this file after i guess 2 years
+/*
+? Steps to remove a variable from memory
+    1. Fetch the pointer using env.get(target_name)
+    2. Fetch the MemoryCell using mem.get(*ptr)
+    3. Remove the entry from the mem.cells. Let the vector adjust itself
+
+! MAJOR ISSUE WITH THIS :
+    After removing a value from the Cells (vec), the position of the elements after it is shifted too. 
+    This alters the position i.e. the POINTER of it w.r.t. to the HashMap Env
+
+* My Solution 
+    1) follow steps 1 and 2 like before.
+    2) Only set the data at mem.cells[*ptr] as NULL or similar shit
+    3) Remove the pointer to it
+    ? Kinda okay, yk works.
+
+    4) Implementing a freelist that stores the deallocated memory slots free to use. O(1) operation as the first slot is used generally
+
+*/
+pub fn remove_from_mem(
+    line: &Vec<Builtins>,
+    mem: &mut Memory,
+    env: &mut Env
+) {
+    let target_name = match &line[1] {
+        Builtins::ID(id) => id,
+        _ => Throw!("MutateMemError: Expected variable name. Got some other shit")
     };
-    heap_clone
+
+    let target_ptr = env.remove(target_name);
+    mem.dealloc(target_ptr);
+
 }
 
 //--------------------------------------------------------------------------
 
+/*
 fn check_compatible(v1: &Builtins, v2: &Builtins, allowModif: bool) -> bool {
     match (v1, v2) {
         (Builtins::D_type(D_type::int(_)), Builtins::D_type(D_type::int(_))) => true,
@@ -116,3 +146,4 @@ fn check_compatible(v1: &Builtins, v2: &Builtins, allowModif: bool) -> bool {
         )),
     }
 }
+*/
