@@ -2,5 +2,7 @@ _VARS: 0
 EOS!
 
 _MAIN:
-    IF [true == true] PRINTLN "works!"
+    IF true {
+        PRINTLN "works!"
+    }
 _END:

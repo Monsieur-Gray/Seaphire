@@ -1,13 +1,17 @@
-_VARS: 0
+_VARS: 3
+    int ?a 0
+    int ?b 0
+    str ?operation ""
 EOS!
 
 _MAIN:
-    MOV $1 SINPUT "Enter a:- "
-    MOV $2 SINPUT "Enter b:- "
-    MOV $3 SINPUT "Enter operation:- (+ - * /)"
+    MOV a SINPUT "Enter a:- "
+    MOV b SINPUT "Enter b:- "
+    MOV operation SINPUT "Enter operation:- (+ - * /)"
 
-    IF [$3 == "+"] ADD $1 $2
-    IF [$3 == "-"] SUB $1 $2
-    IF [$3 == "*"] MUL $1 $2
-    IF [$3 == "/"] DIV $1 $2
+    IF [operation == "+"] ADD a b
+    ELIF [operation == "-"] SUB a b
+    ELIF [operation == "*"] MUL a b
+    ELIF [operation == "/"] DIV a b
+    ELSE PRINTLN "bhak chutiye, theek se likh"
 _END:  

@@ -6,6 +6,5 @@ EOS!
 _MAIN:
     ADD 23 5
     ADD Age 1
-    MOV $1 ADD 10 100
-    PRINT_COOL $1
+    PRINT_COOL Age
 _END:  
