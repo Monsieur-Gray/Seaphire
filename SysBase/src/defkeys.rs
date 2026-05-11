@@ -1,5 +1,5 @@
-use std::collections::HashMap;
-// use crate::Throw;
+use std::collections::HashMap ;
+
 
 #[derive(Debug, PartialEq, Clone)] 
 pub enum D_type {
@@ -8,6 +8,14 @@ pub enum D_type {
     float(f32),
     bool(bool),
 }
+
+// Just a wrapper around int and float types
+#[derive(Debug, Clone)] 
+pub enum Number {
+    int(i32),
+    float(f32)
+}
+
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Std_fns {PRINT_COOL, PRINT, PRINT_NEWLINE, SINPUT}     // Standard - Builtin functions
@@ -138,6 +146,25 @@ impl PartialOrd for Builtins {
     }
 }
 
+/* impl Add for D_type {
+    type Output = Number;
+    fn add(self, rhs: Self) -> Number {
+        match (self, rhs) {
+            (D_type::int(i) , D_type::float(f)) => Number::float(i as f32 + f),
+            (D_type::float(f) , D_type::int(i)) => Number::float(i as f32 + f),
+            (D_type::int(i1) , D_type::int(i2)) => Number::int(i1 + i2),
+            (D_type::float(f1) , D_type::float(f2)) => Number::float(f1 + f2),
+            _ => Throw!("Unsupported data types! Cannot perform addition.")
+        }
+    }
+}
+
+impl Sum for Builtins::D_type {
+    fn sum() -> Number {
+
+    }
+}
+ */
 impl Builtins {
 
     pub fn unwrap_dtype_int(&self) -> i32 {

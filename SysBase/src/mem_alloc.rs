@@ -45,14 +45,22 @@ pub fn mutate_mem(
     let target_ptr = env.get(target_name);
     let target_mem_cell = mem.get_mut(*target_ptr);
 
-    if target_mem_cell.is_mutable {
-        // resolve the id internally and assign its value to target variable
-        // By defination line[2] is gonna be of type Builtins::ID() (enforced in EXECUTE.rs)
-        target_mem_cell.data = source_data;
+    let old_data = &target_mem_cell.data;
+
+    if type_safety(old_data, &source_data) {
+        if target_mem_cell.is_mutable {
+            // resolve the id internally and assign its value to target variable
+            // By defination line[2] is gonna be of type Builtins::ID() (enforced in EXECUTE.rs)
+            target_mem_cell.data = source_data;
+        }
+        else {
+           Throw!(format!("MutateMemError: The variable `{:?}` isn't mutable", target_name)); 
+        }
     }
     else {
-       Throw!(format!("MutateMemError: The variable `{:?}` isn't mutable", target_name)); 
+        (); // type_safety(...) throws the error automatically !
     }
+
 }
 // Completed at 09:55PM 8/5/26
 
@@ -65,7 +73,7 @@ pub fn insert_to_mem(
     line: &Vec<Builtins>,
     mem: &mut Memory,
     env: &Env,
-    direct_value: Builtins,
+    direct_value: &Builtins,
 ) {
 
     let target_name = match &line[1] {
@@ -75,13 +83,20 @@ pub fn insert_to_mem(
 
     let target_ptr = env.get(target_name);
     let mem_cell = mem.get_mut(*target_ptr);
+    let old_data = &mem_cell.data;
 
-    if mem_cell.is_mutable {
-        mem_cell.data = direct_value ;
+    if type_safety(&old_data, direct_value) {
+        if mem_cell.is_mutable {
+            mem_cell.data = direct_value.to_owned() ;
+        }
+        else {
+            Throw!(format!("MutateMemError: The variable `{:?}` isn't mutable", target_name));
+        }
     }
     else {
-        Throw!(format!("MutateMemError: The variable `{:?}` isn't mutable", target_name));
+        (); 
     }
+
  
 }
 
@@ -113,32 +128,31 @@ pub fn remove_from_mem(
 ) {
     let target_name = match &line[1] {
         Builtins::ID(id) => id,
-        _ => Throw!("MutateMemError: Expected variable name. Got some other shit")
+        _ => Throw!("RemoveMemError: Expected variable name. Got some other shit")
     };
 
     let target_ptr = env.remove(target_name);
     mem.dealloc(target_ptr);
-
 }
 
 //--------------------------------------------------------------------------
 
-/*
-fn check_compatible(v1: &Builtins, v2: &Builtins, allowModif: bool) -> bool {
+
+fn type_safety(v1: &Builtins, v2: &Builtins) -> bool {
     match (v1, v2) {
         (Builtins::D_type(D_type::int(_)), Builtins::D_type(D_type::int(_))) => true,
         (Builtins::D_type(D_type::float(_)), Builtins::D_type(D_type::float(_))) => true,
         (Builtins::D_type(D_type::str(_)), Builtins::D_type(D_type::str(_))) => true,
         (Builtins::D_type(D_type::bool(_)), Builtins::D_type(D_type::bool(_))) => true,
 
-        (Builtins::D_type(D_type::int(_)), Builtins::D_type(D_type::float(_)))
+        /* (Builtins::D_type(D_type::int(_)), Builtins::D_type(D_type::float(_)))
         | (Builtins::D_type(D_type::float(_)), Builtins::D_type(D_type::int(_))) => {
             if allowModif {
                 true
             } else {
                 false
             }
-        }
+        } */
         _ => crate::Throw!(format!(
             "Can't insert a value of type {:?} into a variable of type {:?}",
             v2.get_data_type(),
@@ -146,4 +160,3 @@ fn check_compatible(v1: &Builtins, v2: &Builtins, allowModif: bool) -> bool {
         )),
     }
 }
-*/

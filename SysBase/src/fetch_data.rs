@@ -1,27 +1,35 @@
 use crate::defkeys::{Builtins, D_type};
-use crate::memory_layout::*;
+use crate::{Throw, memory_layout::*};
 
-pub fn fetch_num(data: &Builtins) -> Result<f32, &str> {
+pub fn fetch_int(data: &Builtins) -> Result<i32, f32> {
     match data {
-        Builtins::D_type(D_type::int(s_int)) => Ok(*s_int as f32),
-        Builtins::D_type(D_type::float(s_flt)) => Ok(*s_flt),
-        _ => Err("fetch_num ::> Fetch Error!")
+        Builtins::D_type(D_type::int(s_int)) => Ok(*s_int),
+        Builtins::D_type(D_type::float(s_flt)) => Err(*s_flt),
+        _ => Throw!("fetch_int ::> Fetch Error!")
     }
 }
+
+pub fn fetch_float(data: &Builtins) -> Result<f32, i32> {
+    match data {
+        Builtins::D_type(D_type::float(s_flt)) => Ok(*s_flt),
+        Builtins::D_type(D_type::int(s_int)) => Err(*s_int),
+        _ => Throw!("fetch_int ::> Fetch Error!")
+    }
+}
+
 
 pub fn fetch_str(data: &Builtins) -> Result<String, &str> {
     match data {
         Builtins::D_type(D_type::str( d )) => Ok(chk_annotation(d)),
         Builtins::ID(d) => Ok(chk_annotation(d)),
-        Builtins::REGISTER(reg) => Ok(reg.to_string()),
-        _ => Err("fetch_str ::> Fetch Error!")
+        _ => Throw!("fetch_str ::> Fetch Error!")
     }
 }
 
 pub fn fetch_bool(data: &Builtins) -> Result<bool, &str> {
     match data {
         Builtins::D_type(D_type::bool( b )) => Ok(*b),
-        _ => Err("fetch_bool ::> Fetch Error!")
+        _ => Throw!("fetch_bool ::> Fetch Error!")
     }
 }
 
