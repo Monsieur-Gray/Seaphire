@@ -2,7 +2,7 @@ use SysBase::memory_layout::{Memory, Env};
 use colored::Colorize;
 use SysBase::defkeys::*;
 
-use SysBase::fetch_data::{fetch_bool, fetch_num, fetch_str};
+use SysBase::fetch_data::{fetch_int, fetch_float, fetch_bool, fetch_str};
 
 pub fn print_line(
     line: &Vec<Builtins>,
@@ -62,7 +62,18 @@ fn print_cool(
 ) {
     let dat = &mem.get(*env.get(&var_nam)).data;
 
-    if let Ok(dat) = fetch_num(&dat) {
+    if let Ok(dat) = fetch_int(&dat) {
+        if is_cool {
+            println!("{:?} contains {}", var_nam, dat.to_string().green().bold());
+        } else {
+            if is_newline{
+                print!("{}\n", dat.to_string().truecolor(150, 150, 100).bold());
+            } else {
+                print!("{}", dat.to_string().truecolor(150, 150, 100).bold());
+            }
+        }
+    } 
+    else if let Ok(dat) = fetch_float(&dat) {
         if is_cool {
             println!("{:?} contains {}", var_nam, dat.to_string().green().bold());
         } else {

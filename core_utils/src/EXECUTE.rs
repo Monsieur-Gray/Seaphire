@@ -185,7 +185,7 @@ fn execute_line(
 
                     let isElifTrue = match elif_exp[0].get_expression_type() {
                         // The condition
-                        Ok(_) => Compare::eval_condition(&elif_exp[0].clone(), mem, env)
+                        Ok(_) => Compare::eval_condition(&elif_exp[0], mem, env)
                         .unwrap(),
                         Err(_) => fetch_bool(&if_exp[0]).unwrap(),
                     };
@@ -220,8 +220,7 @@ fn execute_line(
                                 Builtins::ID(_) => mutate_mem(&expr, mem, env),
 
                                 Builtins::D_type(_) => {
-                                    let data_to_insert = expr[2].clone();
-                                    insert_to_mem(&expr, mem, env, data_to_insert)
+                                    insert_to_mem(&expr, mem, env, &expr[2])
                                 }
 
                                 Builtins::Expr {
@@ -229,13 +228,18 @@ fn execute_line(
                                     expr: math_expr,
                                 } => {
                                     // returns data of type builtins::d_type
-                                    let math_buff = Builtins::D_type(D_type::float(perf_math(
+                                    let math_ans = perf_math(
                                         math_expr,
                                         mem,
                                         env,
                                         false,
-                                    )));
-                                    insert_to_mem(&expr, mem, env, math_buff)
+                                    );
+                                    let math_buff = match math_ans {
+                                        Number::int(i) => Builtins::D_type(D_type::int(i)),
+                                        Number::float(f) => Builtins::D_type(D_type::float(f))
+                                    };
+                                    
+                                    insert_to_mem(&expr, mem, env, &math_buff)
                                 }
 
                                 Builtins::Expr {
@@ -246,7 +250,7 @@ fn execute_line(
                                                 Builtins::Std_fns(Std_fns::SINPUT) => crate::Input::get_parsed_inp(&std_expr),
                                                 other_fn => Throw!(format!("The following fucntion doesn't have a return type --> {:?}", other_fn))
                                             };
-                                    insert_to_mem(&expr, mem, env, input_buff)
+                                    insert_to_mem(&expr, mem, env, &input_buff)
                                 }
 
                                 _ => {
@@ -254,62 +258,14 @@ fn execute_line(
                                 }
                             };
                         }
-                        /*
-                        Builtins::REGISTER(_) => {
-                            reg_hash = match &expr[2] {
-                                // Input/New value
-                                Builtins::D_type(_) | Builtins::ID(_) => {
-                                    mutate_reg(&expr, &stack_hash, reg_hash)
-                                }
 
-                                Builtins::Expr {
-                                    exp_type: ExpType::STDFN_EXP,
-                                    expr: std_expr,
-                                } => {
-                                    let input_buff = match &std_expr[0] {
-                                                Builtins::Std_fns(Std_fns::SINPUT) => crate::Input::get_parsed_inp(&std_expr),
-                                                other_fn => Throw!(format!("The following fucntion doesn't have a return type --> {:?}", other_fn))
-                                            };
-                                    insert_to_reg(&expr, reg_hash, input_buff)
-                                }
-
-                                Builtins::Expr {
-                                    exp_type: ExpType::MATH_EXP,
-                                    expr: math_expr,
-                                } => {
-                                    let math_buff = Builtins::D_type(D_type::float(perf_math(
-                                        math_expr,
-                                        &stack_hash,
-                                        &heap_hash,
-                                        &reg_hash,
-                                        false,
-                                    )));
-                                    insert_to_reg(&expr, reg_hash, math_buff)
-                                }
-
-                                _ => {
-                                    Throw!("The expression / function doesn't have a return type!")
-                                }
-                            };
-                        }
-                        */
                         _ => (),
                     }
                 }
 
                 Builtins::MemInst(MemInst::DEL) => {
-                    let name = match &expr[1] {
-                        Builtins::ID(id) => {
-                            id
-                        },
-                        fuck => Throw!(
-                                format!("DEL expected a variable bruh! What the fuck is `{:?}` ?", fuck)
-                            )
-                    };
-                    let ptr = env.remove(&name);
-                    mem.dealloc(ptr);
-
-                    // Throw!(format!("FREE_MEM ::> No variable named '{}'", var));
+                    SysBase::mem_alloc::remove_from_mem(&expr, mem, env);   
+                    //? its that easy now !
                 }
 
                 _ => Throw!("I threw up in execute_line"),

@@ -1,0 +1,216 @@
+// #![allow(unused)]
+use std::collections::HashMap;
+
+use colored::Colorize;
+use SysBase::defkeys::*;
+
+use SysBase::fetch_data::fetch_str;
+use crate::Throw;
+
+use crate::compiler_tools::*;
+
+
+fn gen_vars(
+    stack_hash: &HashMap<String, MemCell>,
+    heap_hash: &HashMap<String, MemCell>,
+) -> [Vec<String>; 2] {
+// ("a", MemCell { value: D_type(str("'hi'")), scope: GlobalScope })
+    let stack_buff = cpp_var_make(&stack_hash);
+    let heap_buff = cpp_var_make(&heap_hash);
+    return [stack_buff, heap_buff];
+}
+
+
+pub fn compile_to_cpp(
+    block: &Vec<Builtins>,
+    stack_hash: HashMap<String, MemCell>,
+    heap_hash: HashMap<String, MemCell>,
+) {
+    let mut main_buff = String::new();
+    let [stack_buff, heap_buff] = gen_vars(&stack_hash, &heap_hash);
+
+    for inp_line in block {
+
+        match inp_line {
+            Builtins::Expr { exp_type: ExpType::MEM_INST_EXP, expr: mem_expr } => {
+                match mem_expr[0]  {      // Which function to use (MOV / DEL) 
+
+                    Builtins::MemInst(MemInst::MOV) => {
+                        let str_to_push = mov_mem(
+                            inp_line.unwrap_expr_vec().unwrap(), 
+                            &heap_buff
+                        );
+                        main_buff.push_str(&str_to_push);
+                    },
+
+
+                    Builtins::MemInst(MemInst::DEL) => {
+                        del_mem(inp_line.unwrap_expr_vec().unwrap());
+                    }
+
+                    _ => ()
+                }
+            },
+
+
+
+            _ => main_buff.push_str(&expr_to_cpp(inp_line, &stack_hash, &heap_hash))
+        };
+    };
+
+    use std::fs;
+    let mut final_output = String::from("#include <iostream>\r\n\r\nint main() { \r\n");
+
+    for s in stack_buff {
+        final_output.push_str(s.as_str())
+    }
+
+    for h in heap_buff {
+        final_output.push_str(h.as_str())
+    }
+    final_output.push('\n');
+
+    
+    final_output.push_str(&main_buff);
+    final_output.push_str("\treturn 0;\r\n}");
+    
+    let _ = fs::write("seaphire_out.cpp", final_output.as_bytes());
+    println!("{}", "SUCCESFULLY COMPILED!".purple().bold());
+
+}
+
+
+
+pub fn expr_to_cpp(
+    inp_line: &Builtins,
+    _stack_hash: &HashMap<String, MemCell>,
+    _heap_hash: &HashMap<String, MemCell>
+) -> String {
+    let mut main_buff = String::new();
+
+    match &inp_line {
+
+        Builtins::Expr { exp_type: ExpType::MATH_EXP, expr} => {
+            let math_cpp_expr = math_to_cpp(expr);
+
+            let temp_str = format!("\tstd::cout << ({}) << std::endl;\n", math_cpp_expr);
+            main_buff.push_str(&temp_str);
+
+        }
+                    
+//STANDARD FUNCTIONS------------------------------------------------------------------------------------
+        Builtins::Expr { exp_type: ExpType::STDFN_EXP, expr} => {
+            match &expr[0] {
+                Builtins::Std_fns(Std_fns::PRINT_COOL) | Builtins::Std_fns(Std_fns::PRINT) => {
+                    let data_to_print = &expr[1];    // expr => [PRINT , <DTYPE>]
+
+                    main_buff.push_str(
+                        format!("\tstd::cout << {} << std::endl;\n", data_to_string(data_to_print)).as_str()
+                    );
+                },
+
+                _ => (),
+            }
+        } ,
+
+//ERROR HANDLING-------------------------------------------------------------------------------------
+            Builtins::Comment => (),
+            other => Throw!(format!("UNIMPLEMENTED FUNCTIONALITY -->{:?}", other))
+    };
+
+    return main_buff;
+}
+
+
+
+//---------------------------------------------------------------------------------------------------
+fn mov_mem(inp_line: &Vec<Builtins>, hbuff: &Vec<String>) -> String {
+    let nam = fetch_str(inp_line.get(1).unwrap()).unwrap();
+    let v = inp_line.last().unwrap();
+
+    let output_string = String::new();
+
+    for line in hbuff {
+        let line_vec = line.split_ascii_whitespace().collect::< Vec<&str> >();  
+// ["int..", "id", "=", "value" ]
+        if line_vec[1] == nam.as_str() {        // if the given variable is in heap
+            
+            if v.get_data_type() == MemType::NaN {
+                let expression = v.unwrap_expr_vec().unwrap();
+
+                match v.get_expression_type() {
+                    Ok(exp_type) => match exp_type {
+                        
+                        ExpType::STDFN_EXP => {
+                            let prompt_stat = format!("std::cout << {:?} << std::endl;", expression[1].unwrap_dtype_str() );
+                            let tmp =  format!("\n\t{}\n\tstd::cin >> {};\n", prompt_stat, nam);   // confusing but works
+                            return tmp;
+                        },
+                        
+                        ExpType::MATH_EXP => {
+                            if (line_vec[0] == "int") || (line_vec[0] == "float") {
+                                let math_exp = math_to_cpp( expression );
+                                return format!("\t{} = ({});\n", nam, math_exp);
+                            } 
+                            else {
+                                Throw!("Cannot assign a numerical value to this variable")
+                            }; 
+                        },
+
+                        _ => ()
+                    },
+                    Err( er ) => panic!("ddd{:?}", er)
+                }
+            }
+            else {
+                return match v.get_data_type() {
+                    MemType::int => String::from(format!("\t{} = {} ;\n", nam, v.unwrap_dtype_int()).as_str()),
+                    MemType::float => String::from(format!("\t {} = {}f ;\n", nam, v.unwrap_dtype_float()).as_str()),
+                    MemType::str => String::from(format!("\t{} = \"{}\" ;\n", nam, v.unwrap_dtype_str()).as_str()),
+                    MemType::bool => String::from(format!("\t{} = {} ;\n", nam, v.unwrap_dtype_bool()).as_str()),
+                    _ => Throw!("unknown dtype"),
+                };
+            }
+        }
+
+        else {
+            Throw!(format!("No mutable variable named '{nam}' found!"));
+        };
+
+    };
+    return output_string;
+}
+
+fn del_mem( inp_line: &Vec<Builtins>, 
+    // stack_buff: &Vec<String>, 
+    // heap_buff: &Vec<String>,
+) {
+
+    println!("---> {:?}", inp_line);
+}
+
+fn cpp_var_make(inp_hash: &HashMap<String, MemCell>) -> Vec<String> {
+    let mut output_string: Vec<String> = Vec::new();
+
+    for (nam, val) in inp_hash.iter() {   
+        if nam.starts_with("REG") == false {
+            let line = match  val.value.get_data_type()  {
+                MemType::int => String::from(format!("\tint {} = {} ;\n", nam, val.value.unwrap_dtype_int()).as_str()),
+                MemType::float => String::from(format!("\tfloat {} = {}f ;\n", nam, val.value.unwrap_dtype_float()).as_str()),
+                MemType::str => String::from(format!("\tstd::string {} = \"{}\" ;\n", nam, val.value.unwrap_dtype_str()).as_str()),
+                MemType::bool => String::from(format!("\tbool {} = {} ;\n", nam, val.value.unwrap_dtype_bool()).as_str()),
+                _ => Throw!("unknown dtype"),
+            };
+
+            output_string.push(line);
+        }
+        else {
+            crate::Throw!(format!("{}\n{}\n\n{}",
+                "Due to limitations of the language and inability to transfer some features to C++",
+                ", the prefix 'REG' is reserved for registers.",
+                "Please use another name for your variable"
+            ))
+        };
+    }
+    return output_string;
+}

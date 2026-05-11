@@ -1,86 +1,153 @@
 use SysBase::defkeys::*;
 
-use SysBase::fetch_data::{fetch_num, get_data};
+use SysBase::fetch_data::{fetch_int, get_data};
 use SysBase::memory_layout::{Env, Memory};
 use crate::Throw;
 
 fn seaphire_add(operands: &Vec<Builtins>,
     mem: &Memory,
     env: &Env
-) -> f32 {
-    let answer: f32 = operands.iter().map(|i| {
-        let val = get_data(i, mem, env);
-        match fetch_num(val) {
-            Ok(v) => v,
-            Err(_) => 0.0
+) -> Number {
+    let mut return_type: char = 'i';
+    let answer: f32 = operands.iter().map(|n: &Builtins| {
+        let val = get_data(n, mem, env);
+        match fetch_int(val) {
+            Ok(i) => {
+                return_type = 'i';
+                i as f32
+            },
+            Err(f) => {
+                return_type = 'f';
+                f
+            }
         }
     }).sum();
     
-    return answer;
+    if return_type == 'i' {
+        return Number::int(answer as i32);
+    }
+    else {
+        return Number::float(answer);
+    }
+
 }
 
 fn seaphire_sub(operands: &Vec<Builtins>,               //SUBTRACTION
     mem: &Memory,
     env: &Env
-) -> f32 {
+) -> Number {
     
-    let mut answer: f32 =  match fetch_num(get_data(&operands[0], mem, env)) {
-        Ok(v) => v,
-        Err(_) => 0.0
+    let mut return_type: char;
+    let mut answer: f32 =  match fetch_int(get_data(&operands[0], mem, env)) {
+        Ok(i) => {
+            return_type = 'i';
+            i as f32
+        },
+        Err(f) => {
+            return_type = 'f';
+            f
+        }
     };    // For the offset!
 
-    operands.iter().skip(1).for_each(|i| {
-        let num = match fetch_num(
-            get_data(i, mem, env)
-            ) {
-                Ok(v) => v,
-                Err(_) => 0.0
+    operands.iter().skip(1).for_each(|n| {
+        let num = match fetch_int(get_data(n, mem, env)) {
+            Ok(i) => {
+                return_type = 'i';
+                i as f32
+            },
+            Err(f) => {
+                return_type = 'f';
+                f
+            }
         };
         answer -= num;
     });
         
-    return answer;
+    if return_type == 'i' {
+        return Number::int(answer as i32);
+    }
+    else {
+        return Number::float(answer);
+    }
 }
 
 fn seaphire_mul(operands: &Vec<Builtins>,
     mem: &Memory,
     env: &Env
-) -> f32
+) -> Number
 {
+    let mut return_type: char = 'i';
     let mut answer: f32 = 1.0;
-    operands.iter().for_each(|i| {
-        let num = match fetch_num(
-            get_data(i, mem, env)
-            ) {
-                Ok(v) => v,
-                Err(_) => 1.0
+    operands.iter().for_each(|n| {
+
+        let num = match fetch_int(get_data(n, mem, env)) {
+            Ok(i) => {
+                return_type = 'i';
+                i as f32
+            },
+            Err(f) => {
+                return_type = 'f';
+                f
+            }
         };
+
         answer *= num;
     });
-    return answer;
+
+    if return_type == 'i' {
+        return Number::int(answer as i32);
+    }
+    else {
+        return Number::float(answer);
+    }
+
 }
 
 fn seaphire_div(operands: &Vec<Builtins>,   
     mem: &Memory,
     env: &Env
-) -> f32 
+) -> Number 
 {
-    let mut answer: f32 = fetch_num(get_data(&operands[0], mem, env)).unwrap();      // For the offset!
+    let mut return_type: char;
+    let mut answer: f32 =  match fetch_int(get_data(&operands[0], mem, env)) {
+        Ok(i) => {
+            return_type = 'i';
+            i as f32
+        },
+        Err(f) => {
+            return_type = 'f';
+            f
+        }
+    };    // For the offset!
 
     operands.iter().skip(1).for_each(|i| {
-        let num = match fetch_num(get_data(i, mem, env)) 
+        let num = match fetch_int(get_data(i, mem, env)) 
         {
-            Ok(v) => {
-                if v == 0.0 {
+            Ok(i) => {
+                return_type = 'i';
+                if i == 0 {
                     Throw!("ZeroDivisionError ::> Who in the actual fuck divides by 0? \n LIKE WHO IN THEIR RIGHT BLOODY MIND DIVIDES BY 0");
-                } else { v }
+                }
+                i as f32
             },
-            Err(_) => 1.0
+            Err(f) => {
+                return_type = 'f';
+                if f == 0.0 {
+                    Throw!("ZeroDivisionError ::> Who in the actual fuck divides by 0? \n LIKE WHO IN THEIR RIGHT BLOODY MIND DIVIDES BY 0");
+                }
+                f
+            }
         };
         answer /= num;
     });
             
-    return answer;
+    if return_type == 'i' {
+        return Number::int(answer as i32);
+    }
+    else {
+        return Number::float(answer);
+    }
+
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------
@@ -90,7 +157,7 @@ pub fn perf_math(line: &Vec<Builtins>,
     mem: &Memory,
     env: &Env,
     should_print: bool
-) -> f32 {
+) -> Number {
     use colored::*;
 //----------------------------ADDITION----------------------------------------------
     if line[0] == Builtins::Operation(Operation::ADD) {
