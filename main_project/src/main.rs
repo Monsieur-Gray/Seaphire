@@ -6,7 +6,7 @@ use SysBase::{SysThrow, PARSER};
 use SysBase::memory_layout::{Memory, Env, MemCell};
 
 // use pipeline::CppCompiler::*;
-use core_utils::EXECUTE_2::check_exec_line;
+use core_utils::EXECUTE::check_exec_line;
 
 // ! 7:05pm
 
@@ -14,7 +14,7 @@ fn main() {
     use std::fs::read_to_string;
 
     // ENTER YOUR FILE NAME HERE ->
-    let file_name = "src/calc2.inu";
+    let file_name = "src/debug.inu";
     let txt = if let Ok(bruh) = read_to_string(&file_name) {
         bruh
     } else {

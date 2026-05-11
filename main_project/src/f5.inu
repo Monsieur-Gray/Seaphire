@@ -1,0 +1,13 @@
+_VARS: 4
+    int a 10
+    int b 20
+    float c 50.5
+    float d 100.25
+EOS!
+
+_MAIN:
+    ADD a b
+    ADD a c
+    ADD b c
+    ADD c d
+_END:

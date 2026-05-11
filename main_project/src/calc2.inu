@@ -12,6 +12,9 @@ _MAIN:
         MOV b SINPUT "Enter b:- "
         MOV oper SINPUT "Enter operation:- (+ - * /)"
 
+        PRINT_COOL a
+        PRINT_COOL b
+
         crap-> So apparantly the entire If-elif-else block is considered one entire line
         IF [oper == "+"] ADD a b
             ELIF [oper == "-"] SUB a b

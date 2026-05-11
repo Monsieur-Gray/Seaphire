@@ -1,8 +1,9 @@
-_VARS: 0
+_VARS: 2
+    int ?x 50
+    float ?y 10.5
 EOS!
 
 _MAIN:
-    IF true {
-        PRINTLN "works!"
-    }
+    MOV y x
+    PRINT_COOL y
 _END:
