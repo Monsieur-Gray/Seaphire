@@ -236,7 +236,8 @@ fn execute_line(
                                     );
                                     let math_buff = match math_ans {
                                         Number::int(i) => Builtins::D_type(D_type::int(i)),
-                                        Number::float(f) => Builtins::D_type(D_type::float(f))
+                                        Number::float(f) => Builtins::D_type(D_type::float(f)),
+                                        Number::error => Throw!("Useless throw statement. The error is already handled inside ARITHMETIC.rs functions")
                                     };
                                     
                                     insert_to_mem(&expr, mem, env, &math_buff)
