@@ -1,22 +1,16 @@
-use crate::defkeys::{Builtins, D_type};
+use crate::defkeys::{Builtins, D_type, Number};
 use crate::{Throw, memory_layout::*};
 
-pub fn fetch_int(data: &Builtins) -> Result<i32, f32> {
+
+pub fn fetch_num(data: &Builtins) -> Number {
     match data {
-        Builtins::D_type(D_type::int(s_int)) => Ok(*s_int),
-        Builtins::D_type(D_type::float(s_flt)) => Err(*s_flt),
-        _ => Throw!("fetch_int ::> Fetch Error!")
+        Builtins::D_type(D_type::int(s_int)) => Number::int(*s_int),
+        Builtins::D_type(D_type::float(s_flt)) => Number::float(*s_flt),
+        _ => Number::error
     }
 }
 
-pub fn fetch_float(data: &Builtins) -> Result<f32, i32> {
-    match data {
-        Builtins::D_type(D_type::float(s_flt)) => Ok(*s_flt),
-        Builtins::D_type(D_type::int(s_int)) => Err(*s_int),
-        _ => Throw!("fetch_int ::> Fetch Error!")
-    }
-}
-
+// TODO: Replace the return types from Result<String, &str> to something better.
 
 pub fn fetch_str(data: &Builtins) -> Result<String, &str> {
     match data {

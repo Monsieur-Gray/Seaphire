@@ -1,4 +1,4 @@
-use std::collections::HashMap ;
+use std::collections::HashMap;
 
 
 #[derive(Debug, PartialEq, Clone)] 
@@ -13,7 +13,18 @@ pub enum D_type {
 #[derive(Debug, Clone)] 
 pub enum Number {
     int(i32),
-    float(f32)
+    float(f32),
+    error
+}
+
+impl std::fmt::Display for Number {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match *self {
+            Number::int(i) => write!(f, "{}", i),
+            Number::float(flt) => write!(f, "{}", flt),
+            Number::error => Err(std::fmt::Error),
+        }
+    }
 }
 
 
